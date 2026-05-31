@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, getRemainingTargets, getShotAccuracy, shootCell } from './gameState';
+import { createGame, getRemainingTargets, getShotAccuracy, playHumanTurn, shootCell } from './gameState';
 import { coordinateKey, placeTargets, targetsOverlap } from './placement';
 import type { PlacedTarget } from './types';
 
@@ -22,6 +22,14 @@ describe('Battle Soccer game logic', () => {
     const state = createGame(4, testTargets, testTargets);
 
     expect(state.currentStreak).toBe(0);
+  });
+
+  it('starts new games with no computer shots', () => {
+    const state = createGame(4, testTargets, testTargets);
+
+    expect(state.playerShots).toEqual({});
+    expect(state.computerShotCount).toBe(0);
+    expect(state.lastComputerResult).toBeUndefined();
   });
 
   it('places targets without overlapping cells', () => {
@@ -154,5 +162,104 @@ describe('Battle Soccer game logic', () => {
     expect(state.lastResult?.won).toBe(true);
     expect(state.isWon).toBe(true);
     expect(getRemainingTargets(state)).toHaveLength(0);
+  });
+
+  it('plays one computer shot after a valid non-winning human turn', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+
+    expect(state.lastResult?.outcome).toBe('miss');
+    expect(state.shotCount).toBe(1);
+    expect(state.computerShotCount).toBe(1);
+    expect(state.lastComputerResult).toEqual({
+      outcome: 'hit',
+      coordinate: { row: 0, col: 0 },
+      shotCounted: true,
+    });
+    expect(state.playerShots['0,0']).toBe('hit');
+  });
+
+  it('does not play a computer shot after a repeated human shot', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0.5);
+
+    expect(state.lastResult?.outcome).toBe('repeat');
+    expect(state.computerShotCount).toBe(1);
+    expect(Object.keys(state.playerShots)).toEqual(['0,0']);
+  });
+
+  it('does not play a computer shot after a human winning shot', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 0, col: 0 }, () => 0);
+    state = playHumanTurn(state, { row: 0, col: 1 }, () => 0.5);
+
+    expect(state.isWon).toBe(true);
+    expect(state.lastResult?.won).toBe(true);
+    expect(state.computerShotCount).toBe(1);
+    expect(Object.keys(state.playerShots)).toEqual(['0,0']);
+  });
+
+  it('records computer misses against empty player-board cells', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0.99);
+
+    expect(state.lastComputerResult).toEqual({
+      outcome: 'miss',
+      coordinate: { row: 3, col: 3 },
+      shotCounted: true,
+    });
+    expect(state.playerShots['3,3']).toBe('miss');
+  });
+
+  it('does not repeat computer shots while unshot player-board cells remain', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+    state = playHumanTurn(state, { row: 3, col: 2 }, () => 0);
+    state = playHumanTurn(state, { row: 3, col: 1 }, () => 0);
+
+    expect(state.computerShotCount).toBe(3);
+    expect(Object.keys(state.playerShots)).toEqual(['0,0', '0,1', '0,2']);
+  });
+
+  it('does not add a loss state when computer clears player formations', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+    state = playHumanTurn(state, { row: 3, col: 2 }, () => 0);
+
+    expect(state.playerShots['0,0']).toBe('hit');
+    expect(state.playerShots['0,1']).toBe('hit');
+    expect(state.isWon).toBe(false);
+    expect('isLost' in state).toBe(false);
+  });
+
+  it('records exhausted computer turns when no player-board cells remain', () => {
+    const state = createGame(2, testTargets, testTargets);
+    const exhaustedState = {
+      ...state,
+      playerShots: {
+        '0,0': 'hit' as const,
+        '0,1': 'hit' as const,
+        '1,0': 'miss' as const,
+        '1,1': 'miss' as const,
+      },
+      computerShotCount: 4,
+    };
+
+    const nextState = playHumanTurn(exhaustedState, { row: 1, col: 1 }, () => 0);
+
+    expect(nextState.lastResult?.outcome).toBe('miss');
+    expect(nextState.computerShotCount).toBe(4);
+    expect(nextState.playerShots).toEqual(exhaustedState.playerShots);
+    expect(nextState.lastComputerResult).toEqual({
+      outcome: 'exhausted',
+      shotCounted: false,
+    });
   });
 });

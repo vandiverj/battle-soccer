@@ -81,7 +81,7 @@ h2 {
 
 .score-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
   gap: 0.75rem;
   margin: 1.25rem 0;
 }
@@ -108,7 +108,8 @@ h2 {
   font-weight: 700;
 }
 
-.result {
+.result,
+.computer-result {
   min-height: 3.25rem;
   padding: 0.9rem 1rem;
   border-radius: 1rem;
@@ -118,13 +119,24 @@ h2 {
   line-height: 1.4;
 }
 
+.computer-result {
+  min-height: 0;
+  background: #eef6ff;
+  color: #173e62;
+}
+
 .result--hit {
   background: #e2f8d8;
 }
 
 .result--miss,
-.result--repeat {
+.result--repeat,
+.computer-result--miss {
   background: #fff4d8;
+}
+
+.computer-result--hit {
+  background: #ffe1db;
 }
 
 .reset-button {
@@ -236,6 +248,29 @@ h2 {
 
 .player-cell--occupied span {
   position: absolute;
+}
+
+.player-cell--computer-hit {
+  border-color: #ffffff;
+  background: #cf4d2f;
+}
+
+.player-cell--computer-hit::after {
+  opacity: 0.38;
+}
+
+.player-cell--computer-miss {
+  border-color: rgba(255, 255, 255, 0.46);
+  background: rgba(25, 58, 42, 0.42);
+}
+
+.player-cell--computer-hit span,
+.player-cell--computer-miss span {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  font-size: clamp(1rem, 3vw, 1.9rem);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
 }
 
 .player-cell:hover,

@@ -7,6 +7,9 @@ type StatusPanelProps = {
   onReset: () => void;
 };
 
+const formatCoordinate = (coordinate: { row: number; col: number }): string =>
+  `row ${coordinate.row + 1}, column ${coordinate.col + 1}`;
+
 const formatLastResult = (state: GameState): string => {
   if (state.isWon) {
     return 'Final whistle! You cleared every hidden club.';
@@ -26,6 +29,23 @@ const formatLastResult = (state: GameState): string => {
   }
 
   return result.outcome === 'hit' ? 'Hit! Keep pressing that formation.' : 'Miss. The ball rolls wide.';
+};
+
+const formatLastComputerResult = (state: GameState): string => {
+  const result = state.lastComputerResult;
+
+  if (!result) {
+    return 'Computer is waiting for your first counted shot.';
+  }
+
+  if (result.outcome === 'exhausted' || !result.coordinate) {
+    return 'Computer has no unrepeated player-board shots left.';
+  }
+
+  const shotLocation = formatCoordinate(result.coordinate);
+  return result.outcome === 'hit'
+    ? `Computer hit your formation at ${shotLocation}.`
+    : `Computer missed at ${shotLocation}.`;
 };
 
 export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps) {
@@ -57,9 +77,16 @@ export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps
           <strong>{state.currentStreak}</strong>
           <span>Current streak</span>
         </div>
+        <div>
+          <strong>{state.computerShotCount}</strong>
+          <span>Computer shots</span>
+        </div>
       </div>
 
       <p className={`result result--${state.lastResult?.outcome ?? 'ready'}`}>{formatLastResult(state)}</p>
+      <p className={`computer-result computer-result--${state.lastComputerResult?.outcome ?? 'ready'}`}>
+        {formatLastComputerResult(state)}
+      </p>
 
       <button type="button" className="reset-button" onClick={onReset}>
         New game

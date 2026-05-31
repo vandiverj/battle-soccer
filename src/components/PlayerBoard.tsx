@@ -34,18 +34,22 @@ export function PlayerBoard({ state }: PlayerBoardProps) {
         {cells.map((cell) => {
           const key = coordinateKey(cell);
           const formation = occupiedCells.get(key);
+          const computerShot = state.playerShots[key];
+          const computerShotLabel = computerShot ? `, computer ${computerShot}` : ', not yet shot by computer';
           const label = formation
-            ? `Row ${cell.row + 1}, column ${cell.col + 1}: occupied by ${formation.name}`
-            : `Row ${cell.row + 1}, column ${cell.col + 1}: empty player-side cell`;
+            ? `Row ${cell.row + 1}, column ${cell.col + 1}: occupied by ${formation.name}${computerShotLabel}`
+            : `Row ${cell.row + 1}, column ${cell.col + 1}: empty player-side cell${computerShotLabel}`;
 
           return (
             <div
               key={key}
-              className={`grid-cell player-cell ${formation ? 'player-cell--occupied' : ''}`}
+              className={`grid-cell player-cell ${formation ? 'player-cell--occupied' : ''} ${
+                computerShot ? `player-cell--computer-${computerShot}` : ''
+              }`}
               role="gridcell"
               aria-label={label}
             >
-              <span aria-hidden="true">{formation ? formation.shortName.slice(0, 2) : ''}</span>
+              <span aria-hidden="true">{computerShot === 'hit' ? '⚽' : computerShot === 'miss' ? '×' : formation ? formation.shortName.slice(0, 2) : ''}</span>
             </div>
           );
         })}

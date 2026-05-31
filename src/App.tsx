@@ -4,7 +4,7 @@ import { GameBoard } from './components/GameBoard';
 import { PlayerBoard } from './components/PlayerBoard';
 import { StatusPanel } from './components/StatusPanel';
 import { TargetList } from './components/TargetList';
-import { createGame, getRemainingTargets, shootCell } from './game/gameState';
+import { createGame, getRemainingTargets, playHumanTurn } from './game/gameState';
 import type { Coordinate, GameState } from './game/types';
 
 function App() {
@@ -12,7 +12,7 @@ function App() {
   const remainingTargets = useMemo(() => getRemainingTargets(game), [game]);
 
   const handleShoot = (coordinate: Coordinate) => {
-    setGame((currentGame) => shootCell(currentGame, coordinate));
+    setGame((currentGame) => playHumanTurn(currentGame, coordinate));
   };
 
   const handleReset = () => {

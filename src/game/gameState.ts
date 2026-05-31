@@ -1,6 +1,6 @@
 import { GRID_SIZE } from './targets';
 import { coordinateKey, placeTargets } from './placement';
-import type { CellState, Coordinate, GameState, PlacedTarget, ShotResult } from './types';
+import type { CellState, ComputerShotResult, Coordinate, GameState, PlacedTarget, ShotResult } from './types';
 
 const findTargetAt = (targets: PlacedTarget[], coordinate: Coordinate): PlacedTarget | undefined =>
   targets.find((target) => target.cells.some((cell) => coordinateKey(cell) === coordinateKey(coordinate)));
@@ -31,10 +31,58 @@ export const createGame = (
   targets,
   playerFormations,
   shots: {},
+  playerShots: {},
   shotCount: 0,
+  computerShotCount: 0,
   currentStreak: 0,
   isWon: false,
 });
+
+const getAllCoordinates = (gridSize: number): Coordinate[] =>
+  Array.from({ length: gridSize * gridSize }, (_, index) => ({
+    row: Math.floor(index / gridSize),
+    col: index % gridSize,
+  }));
+
+const getAvailableComputerShots = (state: GameState): Coordinate[] =>
+  getAllCoordinates(state.gridSize).filter((coordinate) => !state.playerShots[coordinateKey(coordinate)]);
+
+const takeComputerShot = (state: GameState, random = Math.random): GameState => {
+  const availableShots = getAvailableComputerShots(state);
+
+  if (availableShots.length === 0) {
+    const result: ComputerShotResult = {
+      outcome: 'exhausted',
+      shotCounted: false,
+    };
+
+    return {
+      ...state,
+      lastComputerResult: result,
+    };
+  }
+
+  const shotIndex = Math.max(0, Math.min(Math.floor(random() * availableShots.length), availableShots.length - 1));
+  const coordinate = availableShots[shotIndex];
+  const key = coordinateKey(coordinate);
+  const target = findTargetAt(state.playerFormations, coordinate);
+  const outcome: CellState = target ? 'hit' : 'miss';
+  const result: ComputerShotResult = {
+    outcome,
+    coordinate,
+    shotCounted: true,
+  };
+
+  return {
+    ...state,
+    playerShots: {
+      ...state.playerShots,
+      [key]: outcome,
+    },
+    computerShotCount: state.computerShotCount + 1,
+    lastComputerResult: result,
+  };
+};
 
 export const shootCell = (state: GameState, coordinate: Coordinate): GameState => {
   const key = coordinateKey(coordinate);
@@ -79,4 +127,14 @@ export const shootCell = (state: GameState, coordinate: Coordinate): GameState =
     lastResult: result,
     isWon: won,
   };
+};
+
+export const playHumanTurn = (state: GameState, coordinate: Coordinate, random = Math.random): GameState => {
+  const afterHumanShot = shootCell(state, coordinate);
+
+  if (!afterHumanShot.lastResult?.shotCounted || afterHumanShot.lastResult.won) {
+    return afterHumanShot;
+  }
+
+  return takeComputerShot(afterHumanShot, random);
 };

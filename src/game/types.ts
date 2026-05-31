@@ -21,6 +21,8 @@ export type PlacedTarget = TargetDefinition & {
 
 export type ShotOutcome = 'hit' | 'miss' | 'repeat';
 
+export type ComputerShotOutcome = 'hit' | 'miss' | 'exhausted';
+
 export type ShotResult = {
   outcome: ShotOutcome;
   coordinate: Coordinate;
@@ -29,13 +31,22 @@ export type ShotResult = {
   won: boolean;
 };
 
+export type ComputerShotResult = {
+  outcome: ComputerShotOutcome;
+  coordinate?: Coordinate;
+  shotCounted: boolean;
+};
+
 export type GameState = {
   gridSize: number;
   targets: PlacedTarget[];
   playerFormations: PlacedTarget[];
   shots: Record<string, CellState>;
+  playerShots: Record<string, CellState>;
   shotCount: number;
+  computerShotCount: number;
   currentStreak: number;
   lastResult?: ShotResult;
+  lastComputerResult?: ComputerShotResult;
   isWon: boolean;
 };
