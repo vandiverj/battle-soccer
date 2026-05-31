@@ -11,6 +11,13 @@
 - Game logic and tests: `src/game/`
 - Build output: `dist/` (generated, ignored)
 - Local AI scratch: `.ai-local/` (ignored)
+- Local SDLC context/docs: `docs/` (ignored)
+
+## Local Context
+- This fixture keeps AI SDLC context under ignored `docs/` and raw run evidence under ignored `.ai-local/`.
+- If `docs/` is present locally, start with `docs/memory-bank/activeContext.md`, `docs/memory-bank/contextIndex.md`, `docs/memory-bank/progress.md`, and `docs/context-state.md`.
+- If `docs/` is absent in a fresh clone, use this file plus `README.md`, source files, tests, and current Git status as the restore packet.
+- Keep machine-specific prompt packets, local paths, raw transcripts, and local context docs out of commits unless the human explicitly changes the repo policy.
 
 ## Commands
 ```bash
@@ -31,6 +38,7 @@ npm run build
 - Do not inspect or edit `.agents` from a fixture-worker role.
 - Do not use Battle Soccer feature work to choose product direction for the SDLC pilot.
 - Keep `.ai-local/` prompt packets, run logs, and scratch notes out of commits.
+- Keep ignored local context docs current when they exist, but do not stage them.
 - For UI or user-facing workflow changes, rendered browser review is required when available.
 - If a required verification tool is unavailable, report an evidence cap instead of claiming the check passed.
 
@@ -38,4 +46,4 @@ npm run build
 - Main branch: `main`
 - Commit only scoped, intentional fixture changes.
 - Before public push, verify author/committer identity with `git log --format=fuller -1`.
-- Do not stage `.ai-local/`, generated `dist/`, dependencies, or unrelated files.
+- Do not stage `.ai-local/`, `docs/`, generated `dist/`, dependencies, or unrelated files.

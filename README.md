@@ -9,6 +9,18 @@ The game has two boards:
 
 The fixture is intentionally lightweight. It is useful for testing implementation planning, unit tests, rendered browser review, evidence packets, review-only passes, and final Git handoff behavior.
 
+## AI SDLC Context
+
+Local AI SDLC context may exist under ignored `docs/`:
+
+- `docs/ai-sdlc-workflow.md` explains the fixture SDLC route.
+- `docs/application-model.md` maps game concepts and module boundaries.
+- `docs/context-state.md` records current caps, open decisions, and affected artifacts.
+- `docs/memory-bank/` is the restore packet for future agent sessions.
+- `docs/agents/` defines local agent roles, quality constraints, and runtime adapters.
+
+`docs/` and `.ai-local/` are both ignored. Fresh clones should use `AGENTS.md`, this README, source files, tests, and current Git status as the baseline context unless the local docs are regenerated.
+
 ## Commands
 
 ```bash
@@ -41,4 +53,4 @@ For UI or user-facing behavior, also inspect the rendered app in a browser and r
 
 ## Local Notes
 
-`.ai-local/` is local scratch space for prompt packets, run logs, handoff notes, and pilot evidence. It is ignored and should not be committed.
+`.ai-local/` is local scratch space for prompt packets, run logs, handoff notes, and pilot evidence. `docs/` is local AI SDLC context. Both are ignored and should not be committed.

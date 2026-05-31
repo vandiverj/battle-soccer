@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createGame,
   getGameOutcome,
+  getPlayerFormationDamage,
   getRemainingTargets,
   getShotAccuracy,
   getShotHistory,
@@ -244,6 +245,30 @@ describe('Battle Soccer game logic', () => {
     ]);
   });
 
+  it('reports no player formation damage at the start of a game', () => {
+    const state = createGame(4, testTargets, testTargets);
+
+    expect(getPlayerFormationDamage(state)).toBe(0);
+  });
+
+  it('keeps computer misses out of player formation damage', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0.99);
+
+    expect(state.lastComputerResult?.outcome).toBe('miss');
+    expect(getPlayerFormationDamage(state)).toBe(0);
+  });
+
+  it('calculates player formation damage from computer hits on occupied cells', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+
+    expect(state.lastComputerResult?.outcome).toBe('hit');
+    expect(getPlayerFormationDamage(state)).toBe(50);
+  });
+
   it('does not play a computer shot after a repeated human shot', () => {
     let state = createGame(4, testTargets, testTargets);
 
@@ -315,6 +340,7 @@ describe('Battle Soccer game logic', () => {
     expect(state.playerShots['0,1']).toBe('hit');
     expect(state.isWon).toBe(false);
     expect(state.isLost).toBe(true);
+    expect(getPlayerFormationDamage(state)).toBe(100);
   });
 
   it('does not count human shots or play computer shots after a loss', () => {

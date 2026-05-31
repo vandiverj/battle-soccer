@@ -35,6 +35,18 @@ export const getShotAccuracy = (state: GameState): number | null => {
   return Math.round((getHitCount(state) / state.shotCount) * 100);
 };
 
+export const getPlayerFormationDamage = (state: GameState): number => {
+  const formationCells = state.playerFormations.flatMap((formation) => formation.cells);
+
+  if (formationCells.length === 0) {
+    return 0;
+  }
+
+  const damagedCells = formationCells.filter((cell) => state.playerShots[coordinateKey(cell)] === 'hit');
+
+  return Math.round((damagedCells.length / formationCells.length) * 100);
+};
+
 export const getGameOutcome = (state: Pick<GameState, 'isWon' | 'isLost'>): GameOutcome => {
   if (state.isWon) {
     return 'won';

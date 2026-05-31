@@ -112,6 +112,14 @@ h2 {
   font-size: 1.25rem;
 }
 
+.damage-stat strong {
+  font-size: 1.65rem;
+}
+
+.damage-stat--danger {
+  background: #ffe1db;
+}
+
 .outcome-stat--won {
   background: #e2f8d8;
 }

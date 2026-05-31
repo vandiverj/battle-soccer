@@ -35,3 +35,4 @@ node_modules/.tmp/
 
 # Local AI/agent scratch notes and run logs
 .ai-local/
+docs/

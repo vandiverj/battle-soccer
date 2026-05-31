@@ -1,4 +1,4 @@
-import { getGameOutcome, getShotAccuracy } from '../game/gameState';
+import { getGameOutcome, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
 import type { GameState } from '../game/types';
 import { ShotHistory } from './ShotHistory';
 
@@ -55,6 +55,7 @@ const formatLastComputerResult = (state: GameState): string => {
 
 export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps) {
   const accuracy = getShotAccuracy(state);
+  const formationDamage = getPlayerFormationDamage(state);
   const outcome = getGameOutcome(state);
   const outcomeLabel = outcome === 'won' ? 'Win' : outcome === 'lost' ? 'Loss' : 'Playing';
 
@@ -87,6 +88,10 @@ export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps
         <div>
           <strong>{state.computerShotCount}</strong>
           <span>Computer shots</span>
+        </div>
+        <div className={`damage-stat ${formationDamage >= 75 ? 'damage-stat--danger' : ''}`}>
+          <strong>{formationDamage}%</strong>
+          <span>Formation damage</span>
         </div>
         <div className={`outcome-stat outcome-stat--${outcome}`}>
           <strong>{outcomeLabel}</strong>
