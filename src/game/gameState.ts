@@ -1,6 +1,16 @@
 import { GRID_SIZE } from './targets';
 import { coordinateKey, placeTargets } from './placement';
-import type { CellState, ComputerShotResult, Coordinate, GameOutcome, GameState, PlacedTarget, ShotResult } from './types';
+import type {
+  CellState,
+  ComputerShotResult,
+  Coordinate,
+  GameOutcome,
+  GameState,
+  PlacedTarget,
+  ShotHistoryEntry,
+  ShotResult,
+  ShotSide,
+} from './types';
 
 const findTargetAt = (targets: PlacedTarget[], coordinate: Coordinate): PlacedTarget | undefined =>
   targets.find((target) => target.cells.some((cell) => coordinateKey(cell) === coordinateKey(coordinate)));
@@ -31,6 +41,21 @@ export const getGameOutcome = (state: Pick<GameState, 'isWon' | 'isLost'>): Game
   }
 
   return state.isLost ? 'lost' : 'playing';
+};
+
+const parseCoordinateKey = (key: string): Coordinate => {
+  const [row, col] = key.split(',').map(Number);
+  return { row, col };
+};
+
+export const getShotHistory = (state: GameState, side: ShotSide): ShotHistoryEntry[] => {
+  const shotMap = side === 'human' ? state.shots : state.playerShots;
+
+  return Object.entries(shotMap).map(([key, outcome]) => ({
+    key: `${side}-${key}`,
+    coordinate: parseCoordinateKey(key),
+    outcome: outcome as ShotHistoryEntry['outcome'],
+  }));
 };
 
 export const createGame = (

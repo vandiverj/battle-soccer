@@ -25,6 +25,14 @@ export type ComputerShotOutcome = 'hit' | 'miss' | 'exhausted';
 
 export type GameOutcome = 'playing' | 'won' | 'lost';
 
+export type ShotSide = 'human' | 'computer';
+
+export type ShotHistoryEntry = {
+  key: string;
+  coordinate: Coordinate;
+  outcome: Extract<CellState, 'hit' | 'miss'>;
+};
+
 export type ShotResult = {
   outcome: ShotOutcome;
   coordinate: Coordinate;

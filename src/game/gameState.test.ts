@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, getGameOutcome, getRemainingTargets, getShotAccuracy, playHumanTurn, shootCell } from './gameState';
+import {
+  createGame,
+  getGameOutcome,
+  getRemainingTargets,
+  getShotAccuracy,
+  getShotHistory,
+  playHumanTurn,
+  shootCell,
+} from './gameState';
 import { coordinateKey, placeTargets, targetsOverlap } from './placement';
 import type { PlacedTarget } from './types';
 
@@ -165,6 +173,27 @@ describe('Battle Soccer game logic', () => {
     expect(getShotAccuracy(state)).toBe(50);
   });
 
+  it('reports counted human shots in shot history order', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = shootCell(state, { row: 3, col: 3 });
+    state = shootCell(state, { row: 0, col: 0 });
+    state = shootCell(state, { row: 3, col: 3 });
+
+    expect(getShotHistory(state, 'human')).toEqual([
+      {
+        key: 'human-3,3',
+        coordinate: { row: 3, col: 3 },
+        outcome: 'miss',
+      },
+      {
+        key: 'human-0,0',
+        coordinate: { row: 0, col: 0 },
+        outcome: 'hit',
+      },
+    ]);
+  });
+
   it('wins when all targets are cleared', () => {
     let state = createGame(4, testTargets, testTargets);
 
@@ -193,6 +222,26 @@ describe('Battle Soccer game logic', () => {
       shotCounted: true,
     });
     expect(state.playerShots['0,0']).toBe('hit');
+  });
+
+  it('reports computer shots in shot history order', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+    state = playHumanTurn(state, { row: 3, col: 2 }, () => 0.99);
+
+    expect(getShotHistory(state, 'computer')).toEqual([
+      {
+        key: 'computer-0,0',
+        coordinate: { row: 0, col: 0 },
+        outcome: 'hit',
+      },
+      {
+        key: 'computer-3,3',
+        coordinate: { row: 3, col: 3 },
+        outcome: 'miss',
+      },
+    ]);
   });
 
   it('does not play a computer shot after a repeated human shot', () => {

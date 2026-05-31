@@ -1,5 +1,6 @@
 import { getGameOutcome, getShotAccuracy } from '../game/gameState';
 import type { GameState } from '../game/types';
+import { ShotHistory } from './ShotHistory';
 
 type StatusPanelProps = {
   state: GameState;
@@ -99,6 +100,21 @@ export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps
       <p className={`computer-result computer-result--${state.lastComputerResult?.outcome ?? 'ready'}`}>
         {formatLastComputerResult(state)}
       </p>
+
+      <div className="shot-history-grid">
+        <ShotHistory
+          state={state}
+          side="human"
+          title="Your recent shots"
+          emptyText="Your first shot will appear here."
+        />
+        <ShotHistory
+          state={state}
+          side="computer"
+          title="Computer recent shots"
+          emptyText="Computer shots appear after counted turns."
+        />
+      </div>
 
       <button type="button" className="reset-button" onClick={onReset}>
         New game
