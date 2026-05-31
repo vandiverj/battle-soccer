@@ -22,9 +22,14 @@ export const getShotAccuracy = (state: GameState): number | null => {
   return Math.round((getHitCount(state) / state.shotCount) * 100);
 };
 
-export const createGame = (gridSize = GRID_SIZE, targets = placeTargets(undefined, gridSize)): GameState => ({
+export const createGame = (
+  gridSize = GRID_SIZE,
+  targets = placeTargets(undefined, gridSize),
+  playerFormations = placeTargets(undefined, gridSize),
+): GameState => ({
   gridSize,
   targets,
+  playerFormations,
   shots: {},
   shotCount: 0,
   currentStreak: 0,

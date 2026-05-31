@@ -19,7 +19,7 @@ const testTargets: PlacedTarget[] = [
 
 describe('Battle Soccer game logic', () => {
   it('starts new games with no current streak', () => {
-    const state = createGame(4, testTargets);
+    const state = createGame(4, testTargets, testTargets);
 
     expect(state.currentStreak).toBe(0);
   });
@@ -34,8 +34,16 @@ describe('Battle Soccer game logic', () => {
     }
   });
 
+  it('starts new games with separate non-overlapping player formations', () => {
+    const state = createGame();
+
+    expect(state.playerFormations).toHaveLength(state.targets.length);
+    expect(state.playerFormations).not.toBe(state.targets);
+    expect(targetsOverlap(state.playerFormations)).toBe(false);
+  });
+
   it('updates shot state for hits and misses', () => {
-    let state = createGame(4, testTargets);
+    let state = createGame(4, testTargets, testTargets);
 
     state = shootCell(state, { row: 0, col: 0 });
     expect(state.lastResult?.outcome).toBe('hit');
@@ -51,7 +59,7 @@ describe('Battle Soccer game logic', () => {
   });
 
   it('does not double count repeated shots', () => {
-    let state = createGame(4, testTargets);
+    let state = createGame(4, testTargets, testTargets);
 
     state = shootCell(state, { row: 0, col: 0 });
     state = shootCell(state, { row: 0, col: 0 });
@@ -62,8 +70,27 @@ describe('Battle Soccer game logic', () => {
     expect(state.currentStreak).toBe(1);
   });
 
+  it('does not use player formations for shot results or win state', () => {
+    const playerOnlyFormation: PlacedTarget[] = [
+      {
+        ...testTargets[0],
+        id: 'player-only',
+        cells: [{ row: 3, col: 3 }],
+      },
+    ];
+    let state = createGame(4, testTargets, playerOnlyFormation);
+
+    state = shootCell(state, { row: 3, col: 3 });
+
+    expect(state.lastResult?.outcome).toBe('miss');
+    expect(state.shotCount).toBe(1);
+    expect(state.currentStreak).toBe(0);
+    expect(state.isWon).toBe(false);
+    expect(getRemainingTargets(state)).toHaveLength(1);
+  });
+
   it('preserves the current streak when repeating a missed shot', () => {
-    let state = createGame(4, testTargets);
+    let state = createGame(4, testTargets, testTargets);
 
     state = shootCell(state, { row: 3, col: 3 });
     expect(state.currentStreak).toBe(0);
@@ -80,7 +107,7 @@ describe('Battle Soccer game logic', () => {
   });
 
   it('tracks consecutive hits and resets the current streak on a miss', () => {
-    let state = createGame(4, testTargets);
+    let state = createGame(4, testTargets, testTargets);
 
     state = shootCell(state, { row: 0, col: 0 });
     expect(state.currentStreak).toBe(1);
@@ -93,7 +120,7 @@ describe('Battle Soccer game logic', () => {
   });
 
   it('calculates shot accuracy from counted hits and shots', () => {
-    let state = createGame(4, testTargets);
+    let state = createGame(4, testTargets, testTargets);
 
     expect(getShotAccuracy(state)).toBeNull();
 
@@ -105,7 +132,7 @@ describe('Battle Soccer game logic', () => {
   });
 
   it('keeps repeated shots out of shot accuracy', () => {
-    let state = createGame(4, testTargets);
+    let state = createGame(4, testTargets, testTargets);
 
     state = shootCell(state, { row: 0, col: 0 });
     state = shootCell(state, { row: 3, col: 3 });
@@ -116,7 +143,7 @@ describe('Battle Soccer game logic', () => {
   });
 
   it('wins when all targets are cleared', () => {
-    let state = createGame(4, testTargets);
+    let state = createGame(4, testTargets, testTargets);
 
     state = shootCell(state, { row: 0, col: 0 });
     expect(state.isWon).toBe(false);

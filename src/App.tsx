@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import './App.css';
 import { GameBoard } from './components/GameBoard';
+import { PlayerBoard } from './components/PlayerBoard';
 import { StatusPanel } from './components/StatusPanel';
 import { TargetList } from './components/TargetList';
 import { createGame, getRemainingTargets, shootCell } from './game/gameState';
@@ -23,7 +24,10 @@ function App() {
       <div className="hero-glow" aria-hidden="true" />
       <section className="game-layout">
         <StatusPanel state={game} remainingCount={remainingTargets.length} onReset={handleReset} />
-        <GameBoard state={game} onShoot={handleShoot} />
+        <div className="boards-panel" aria-label="Battle Soccer boards">
+          <PlayerBoard state={game} />
+          <GameBoard state={game} onShoot={handleShoot} />
+        </div>
         <TargetList state={game} />
       </section>
     </main>

@@ -32,6 +32,7 @@ export type ShotResult = {
 export type GameState = {
   gridSize: number;
   targets: PlacedTarget[];
+  playerFormations: PlacedTarget[];
   shots: Record<string, CellState>;
   shotCount: number;
   currentStreak: number;

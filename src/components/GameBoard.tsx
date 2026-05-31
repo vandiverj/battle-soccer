@@ -13,18 +13,18 @@ export function GameBoard({ state, onShoot }: GameBoardProps) {
   }));
 
   return (
-    <section className="board-card" aria-label="Battle Soccer shot grid">
+    <section className="board-card" aria-label="Opponent shot board">
       <div className="board-header">
-        <span>Penalty Grid</span>
+        <span>Opponent board</span>
         <span>{state.gridSize} × {state.gridSize}</span>
       </div>
-      <div className="game-board" role="grid" aria-label="Hidden target grid">
+      <div className="game-board" role="grid" aria-label="Opponent shot board">
         {cells.map((cell) => {
           const key = coordinateKey(cell);
           const shot = state.shots[key];
           const label = shot
-            ? `Row ${cell.row + 1}, column ${cell.col + 1}: ${shot}`
-            : `Shoot row ${cell.row + 1}, column ${cell.col + 1}`;
+            ? `Opponent row ${cell.row + 1}, column ${cell.col + 1}: ${shot}`
+            : `Shoot opponent row ${cell.row + 1}, column ${cell.col + 1}`;
 
           return (
             <button
