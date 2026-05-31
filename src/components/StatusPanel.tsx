@@ -1,3 +1,4 @@
+import { getShotAccuracy } from '../game/gameState';
 import type { GameState } from '../game/types';
 
 type StatusPanelProps = {
@@ -28,6 +29,8 @@ const formatLastResult = (state: GameState): string => {
 };
 
 export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps) {
+  const accuracy = getShotAccuracy(state);
+
   return (
     <aside className="status-card" aria-live="polite">
       <p className="eyebrow">Single-player scouting report</p>
@@ -45,6 +48,10 @@ export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps
         <div>
           <strong>{remainingCount}</strong>
           <span>Targets left</span>
+        </div>
+        <div>
+          <strong>{accuracy === null ? '--' : `${accuracy}%`}</strong>
+          <span>Accuracy</span>
         </div>
       </div>
 

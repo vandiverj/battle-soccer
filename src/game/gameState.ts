@@ -11,6 +11,17 @@ export const isTargetCleared = (target: PlacedTarget, shots: Record<string, Cell
 export const getRemainingTargets = (state: GameState): PlacedTarget[] =>
   state.targets.filter((target) => !isTargetCleared(target, state.shots));
 
+export const getHitCount = (state: GameState): number =>
+  Object.values(state.shots).filter((shot) => shot === 'hit').length;
+
+export const getShotAccuracy = (state: GameState): number | null => {
+  if (state.shotCount === 0) {
+    return null;
+  }
+
+  return Math.round((getHitCount(state) / state.shotCount) * 100);
+};
+
 export const createGame = (gridSize = GRID_SIZE, targets = placeTargets(undefined, gridSize)): GameState => ({
   gridSize,
   targets,

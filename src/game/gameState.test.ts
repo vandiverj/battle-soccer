@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, getRemainingTargets, shootCell } from './gameState';
+import { createGame, getRemainingTargets, getShotAccuracy, shootCell } from './gameState';
 import { coordinateKey, placeTargets, targetsOverlap } from './placement';
 import type { PlacedTarget } from './types';
 
@@ -51,6 +51,29 @@ describe('Battle Soccer game logic', () => {
     expect(state.lastResult?.outcome).toBe('repeat');
     expect(state.lastResult?.shotCounted).toBe(false);
     expect(state.shotCount).toBe(1);
+  });
+
+  it('calculates shot accuracy from counted hits and shots', () => {
+    let state = createGame(4, testTargets);
+
+    expect(getShotAccuracy(state)).toBeNull();
+
+    state = shootCell(state, { row: 0, col: 0 });
+    expect(getShotAccuracy(state)).toBe(100);
+
+    state = shootCell(state, { row: 3, col: 3 });
+    expect(getShotAccuracy(state)).toBe(50);
+  });
+
+  it('keeps repeated shots out of shot accuracy', () => {
+    let state = createGame(4, testTargets);
+
+    state = shootCell(state, { row: 0, col: 0 });
+    state = shootCell(state, { row: 3, col: 3 });
+    state = shootCell(state, { row: 0, col: 0 });
+
+    expect(state.shotCount).toBe(2);
+    expect(getShotAccuracy(state)).toBe(50);
   });
 
   it('wins when all targets are cleared', () => {
