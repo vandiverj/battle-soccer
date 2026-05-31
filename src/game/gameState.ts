@@ -11,6 +11,9 @@ export const isTargetCleared = (target: PlacedTarget, shots: Record<string, Cell
 export const getRemainingTargets = (state: GameState): PlacedTarget[] =>
   state.targets.filter((target) => !isTargetCleared(target, state.shots));
 
+const arePlayerFormationsCleared = (state: GameState, playerShots = state.playerShots): boolean =>
+  state.playerFormations.every((formation) => isTargetCleared(formation, playerShots));
+
 export const getHitCount = (state: GameState): number =>
   Object.values(state.shots).filter((shot) => shot === 'hit').length;
 
@@ -36,6 +39,7 @@ export const createGame = (
   computerShotCount: 0,
   currentStreak: 0,
   isWon: false,
+  isLost: false,
 });
 
 const getAllCoordinates = (gridSize: number): Coordinate[] =>
@@ -67,6 +71,10 @@ const takeComputerShot = (state: GameState, random = Math.random): GameState => 
   const key = coordinateKey(coordinate);
   const target = findTargetAt(state.playerFormations, coordinate);
   const outcome: CellState = target ? 'hit' : 'miss';
+  const nextPlayerShots = {
+    ...state.playerShots,
+    [key]: outcome,
+  };
   const result: ComputerShotResult = {
     outcome,
     coordinate,
@@ -75,12 +83,10 @@ const takeComputerShot = (state: GameState, random = Math.random): GameState => 
 
   return {
     ...state,
-    playerShots: {
-      ...state.playerShots,
-      [key]: outcome,
-    },
+    playerShots: nextPlayerShots,
     computerShotCount: state.computerShotCount + 1,
     lastComputerResult: result,
+    isLost: arePlayerFormationsCleared(state, nextPlayerShots),
   };
 };
 
@@ -130,6 +136,10 @@ export const shootCell = (state: GameState, coordinate: Coordinate): GameState =
 };
 
 export const playHumanTurn = (state: GameState, coordinate: Coordinate, random = Math.random): GameState => {
+  if (state.isWon || state.isLost) {
+    return state;
+  }
+
   const afterHumanShot = shootCell(state, coordinate);
 
   if (!afterHumanShot.lastResult?.shotCounted || afterHumanShot.lastResult.won) {

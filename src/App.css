@@ -139,6 +139,11 @@ h2 {
   background: #ffe1db;
 }
 
+.result--lost {
+  background: #ffe1db;
+  color: #7a1f12;
+}
+
 .reset-button {
   width: 100%;
   min-height: 3rem;

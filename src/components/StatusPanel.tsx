@@ -15,6 +15,10 @@ const formatLastResult = (state: GameState): string => {
     return 'Final whistle! You cleared every hidden club.';
   }
 
+  if (state.isLost) {
+    return 'Full-time defeat. The computer found every one of your formations.';
+  }
+
   const result = state.lastResult;
   if (!result) {
     return 'Pick a square and launch your first shot.';
@@ -83,7 +87,9 @@ export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps
         </div>
       </div>
 
-      <p className={`result result--${state.lastResult?.outcome ?? 'ready'}`}>{formatLastResult(state)}</p>
+      <p className={`result result--${state.isLost ? 'lost' : state.lastResult?.outcome ?? 'ready'}`}>
+        {formatLastResult(state)}
+      </p>
       <p className={`computer-result computer-result--${state.lastComputerResult?.outcome ?? 'ready'}`}>
         {formatLastComputerResult(state)}
       </p>

@@ -32,7 +32,7 @@ export function GameBoard({ state, onShoot }: GameBoardProps) {
               type="button"
               className={`grid-cell ${shot ? `grid-cell--${shot}` : ''}`}
               aria-label={label}
-              disabled={state.isWon}
+              disabled={state.isWon || state.isLost}
               onClick={() => onShoot(cell)}
             >
               <span aria-hidden="true">{shot === 'hit' ? '⚽' : shot === 'miss' ? '×' : ''}</span>

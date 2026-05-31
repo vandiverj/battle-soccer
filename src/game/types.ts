@@ -49,4 +49,5 @@ export type GameState = {
   lastResult?: ShotResult;
   lastComputerResult?: ComputerShotResult;
   isWon: boolean;
+  isLost: boolean;
 };
