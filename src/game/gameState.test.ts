@@ -18,6 +18,12 @@ const testTargets: PlacedTarget[] = [
 ];
 
 describe('Battle Soccer game logic', () => {
+  it('starts new games with no current streak', () => {
+    const state = createGame(4, testTargets);
+
+    expect(state.currentStreak).toBe(0);
+  });
+
   it('places targets without overlapping cells', () => {
     for (let run = 0; run < 25; run += 1) {
       const targets = placeTargets();
@@ -35,11 +41,13 @@ describe('Battle Soccer game logic', () => {
     expect(state.lastResult?.outcome).toBe('hit');
     expect(state.shots['0,0']).toBe('hit');
     expect(state.shotCount).toBe(1);
+    expect(state.currentStreak).toBe(1);
 
     state = shootCell(state, { row: 3, col: 3 });
     expect(state.lastResult?.outcome).toBe('miss');
     expect(state.shots['3,3']).toBe('miss');
     expect(state.shotCount).toBe(2);
+    expect(state.currentStreak).toBe(0);
   });
 
   it('does not double count repeated shots', () => {
@@ -51,6 +59,20 @@ describe('Battle Soccer game logic', () => {
     expect(state.lastResult?.outcome).toBe('repeat');
     expect(state.lastResult?.shotCounted).toBe(false);
     expect(state.shotCount).toBe(1);
+    expect(state.currentStreak).toBe(1);
+  });
+
+  it('tracks consecutive hits and resets the current streak on a miss', () => {
+    let state = createGame(4, testTargets);
+
+    state = shootCell(state, { row: 0, col: 0 });
+    expect(state.currentStreak).toBe(1);
+
+    state = shootCell(state, { row: 0, col: 1 });
+    expect(state.currentStreak).toBe(2);
+
+    state = shootCell(state, { row: 3, col: 3 });
+    expect(state.currentStreak).toBe(0);
   });
 
   it('calculates shot accuracy from counted hits and shots', () => {

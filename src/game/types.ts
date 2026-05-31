@@ -34,6 +34,7 @@ export type GameState = {
   targets: PlacedTarget[];
   shots: Record<string, CellState>;
   shotCount: number;
+  currentStreak: number;
   lastResult?: ShotResult;
   isWon: boolean;
 };

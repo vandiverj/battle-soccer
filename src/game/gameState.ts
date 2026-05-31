@@ -27,6 +27,7 @@ export const createGame = (gridSize = GRID_SIZE, targets = placeTargets(undefine
   targets,
   shots: {},
   shotCount: 0,
+  currentStreak: 0,
   isWon: false,
 });
 
@@ -63,11 +64,13 @@ export const shootCell = (state: GameState, coordinate: Coordinate): GameState =
     clearedTargetId,
     won,
   };
+  const currentStreak = target ? state.currentStreak + 1 : 0;
 
   return {
     ...state,
     shots: nextShots,
     shotCount: state.shotCount + 1,
+    currentStreak,
     lastResult: result,
     isWon: won,
   };

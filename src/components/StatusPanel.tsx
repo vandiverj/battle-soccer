@@ -53,6 +53,10 @@ export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps
           <strong>{accuracy === null ? '--' : `${accuracy}%`}</strong>
           <span>Accuracy</span>
         </div>
+        <div>
+          <strong>{state.currentStreak}</strong>
+          <span>Current streak</span>
+        </div>
       </div>
 
       <p className={`result result--${state.lastResult?.outcome ?? 'ready'}`}>{formatLastResult(state)}</p>
