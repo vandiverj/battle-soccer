@@ -32,3 +32,6 @@ Thumbs.db
 .cache/
 .tmp/
 node_modules/.tmp/
+
+# Local AI/agent scratch notes and run logs
+.ai-local/
