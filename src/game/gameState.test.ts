@@ -62,6 +62,23 @@ describe('Battle Soccer game logic', () => {
     expect(state.currentStreak).toBe(1);
   });
 
+  it('preserves the current streak when repeating a missed shot', () => {
+    let state = createGame(4, testTargets);
+
+    state = shootCell(state, { row: 3, col: 3 });
+    expect(state.currentStreak).toBe(0);
+
+    state = shootCell(state, { row: 0, col: 0 });
+    state = shootCell(state, { row: 0, col: 1 });
+    expect(state.currentStreak).toBe(2);
+
+    state = shootCell(state, { row: 3, col: 3 });
+    expect(state.lastResult?.outcome).toBe('repeat');
+    expect(state.lastResult?.shotCounted).toBe(false);
+    expect(state.shotCount).toBe(3);
+    expect(state.currentStreak).toBe(2);
+  });
+
   it('tracks consecutive hits and resets the current streak on a miss', () => {
     let state = createGame(4, testTargets);
 
