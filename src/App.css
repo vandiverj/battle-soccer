@@ -108,6 +108,18 @@ h2 {
   font-weight: 700;
 }
 
+.outcome-stat strong {
+  font-size: 1.25rem;
+}
+
+.outcome-stat--won {
+  background: #e2f8d8;
+}
+
+.outcome-stat--lost {
+  background: #ffe1db;
+}
+
 .result,
 .computer-result {
   min-height: 3.25rem;

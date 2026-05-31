@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, getRemainingTargets, getShotAccuracy, playHumanTurn, shootCell } from './gameState';
+import { createGame, getGameOutcome, getRemainingTargets, getShotAccuracy, playHumanTurn, shootCell } from './gameState';
 import { coordinateKey, placeTargets, targetsOverlap } from './placement';
 import type { PlacedTarget } from './types';
 
@@ -31,6 +31,20 @@ describe('Battle Soccer game logic', () => {
     expect(state.computerShotCount).toBe(0);
     expect(state.lastComputerResult).toBeUndefined();
     expect(state.isLost).toBe(false);
+  });
+
+  it('reports the game outcome for playing, won, and lost states', () => {
+    const state = createGame(4, testTargets, testTargets);
+
+    expect(getGameOutcome(state)).toBe('playing');
+    expect(getGameOutcome({ ...state, isWon: true })).toBe('won');
+    expect(getGameOutcome({ ...state, isLost: true })).toBe('lost');
+  });
+
+  it('reports a win before a loss if both game-over flags are present', () => {
+    const state = createGame(4, testTargets, testTargets);
+
+    expect(getGameOutcome({ ...state, isWon: true, isLost: true })).toBe('won');
   });
 
   it('places targets without overlapping cells', () => {

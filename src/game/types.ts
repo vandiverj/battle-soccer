@@ -23,6 +23,8 @@ export type ShotOutcome = 'hit' | 'miss' | 'repeat';
 
 export type ComputerShotOutcome = 'hit' | 'miss' | 'exhausted';
 
+export type GameOutcome = 'playing' | 'won' | 'lost';
+
 export type ShotResult = {
   outcome: ShotOutcome;
   coordinate: Coordinate;

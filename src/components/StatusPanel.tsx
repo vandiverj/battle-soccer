@@ -1,4 +1,4 @@
-import { getShotAccuracy } from '../game/gameState';
+import { getGameOutcome, getShotAccuracy } from '../game/gameState';
 import type { GameState } from '../game/types';
 
 type StatusPanelProps = {
@@ -54,6 +54,8 @@ const formatLastComputerResult = (state: GameState): string => {
 
 export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps) {
   const accuracy = getShotAccuracy(state);
+  const outcome = getGameOutcome(state);
+  const outcomeLabel = outcome === 'won' ? 'Win' : outcome === 'lost' ? 'Loss' : 'Playing';
 
   return (
     <aside className="status-card" aria-live="polite">
@@ -84,6 +86,10 @@ export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps
         <div>
           <strong>{state.computerShotCount}</strong>
           <span>Computer shots</span>
+        </div>
+        <div className={`outcome-stat outcome-stat--${outcome}`}>
+          <strong>{outcomeLabel}</strong>
+          <span>Outcome</span>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { GRID_SIZE } from './targets';
 import { coordinateKey, placeTargets } from './placement';
-import type { CellState, ComputerShotResult, Coordinate, GameState, PlacedTarget, ShotResult } from './types';
+import type { CellState, ComputerShotResult, Coordinate, GameOutcome, GameState, PlacedTarget, ShotResult } from './types';
 
 const findTargetAt = (targets: PlacedTarget[], coordinate: Coordinate): PlacedTarget | undefined =>
   targets.find((target) => target.cells.some((cell) => coordinateKey(cell) === coordinateKey(coordinate)));
@@ -23,6 +23,14 @@ export const getShotAccuracy = (state: GameState): number | null => {
   }
 
   return Math.round((getHitCount(state) / state.shotCount) * 100);
+};
+
+export const getGameOutcome = (state: Pick<GameState, 'isWon' | 'isLost'>): GameOutcome => {
+  if (state.isWon) {
+    return 'won';
+  }
+
+  return state.isLost ? 'lost' : 'playing';
 };
 
 export const createGame = (
