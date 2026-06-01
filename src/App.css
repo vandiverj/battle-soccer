@@ -389,6 +389,85 @@ h2 {
   gap: 1rem;
 }
 
+.setup-panel {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 1.5rem 4rem rgba(16, 67, 37, 0.14);
+  color: #173d28;
+}
+
+.setup-panel h2,
+.setup-panel p {
+  margin: 0;
+}
+
+.setup-panel__eyebrow {
+  color: #237245;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.setup-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.setup-controls button {
+  min-height: 2.7rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #e2f8d8;
+  color: #17482e;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.setup-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.setup-controls__primary {
+  background: #163f2a !important;
+  color: #ffffff !important;
+}
+
+.setup-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.setup-piece {
+  min-height: 2rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgba(22, 63, 42, 0.18);
+  border-radius: 999px;
+  background: #f8fff6;
+  color: #315640;
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+
+.setup-piece--active {
+  border-color: #f7b733;
+  background: #fff4d8;
+  color: #6d4c12;
+}
+
+.setup-piece--placed {
+  border-color: #237245;
+  background: #237245;
+  color: #ffffff;
+}
+
 .board-card {
   padding: clamp(1rem, 3vw, 1.5rem);
 }
@@ -474,6 +553,22 @@ h2 {
 
 .player-cell--occupied span {
   position: absolute;
+}
+
+.player-cell--placement {
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.player-cell--placement:not(:disabled):hover,
+.player-cell--placement:not(:disabled):focus-visible {
+  border-color: #f7b733;
+  background: rgba(247, 183, 51, 0.36);
+}
+
+.player-cell--placement:disabled {
+  cursor: not-allowed;
 }
 
 .player-board--thinking .player-cell {
@@ -749,6 +844,10 @@ h2 {
   .target {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .setup-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

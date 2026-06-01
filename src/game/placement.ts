@@ -5,7 +5,7 @@ export const coordinateKey = ({ row, col }: Coordinate): string => `${row},${col
 
 const randomOrientation = (): Orientation => (Math.random() > 0.5 ? 'horizontal' : 'vertical');
 
-const buildCells = (
+export const buildCells = (
   start: Coordinate,
   length: number,
   orientation: Orientation,
@@ -22,6 +22,36 @@ const cellsFit = (cells: Coordinate[], gridSize: number): boolean =>
 
 const cellsAvailable = (cells: Coordinate[], occupied: Set<string>): boolean =>
   cells.every((cell) => !occupied.has(coordinateKey(cell)));
+
+export const canPlaceTarget = (
+  definition: TargetDefinition,
+  start: Coordinate,
+  orientation: Orientation,
+  existingTargets: PlacedTarget[],
+  gridSize = GRID_SIZE,
+): boolean => {
+  const occupied = new Set(existingTargets.flatMap((target) => target.cells.map(coordinateKey)));
+  const cells = buildCells(start, definition.length, orientation);
+
+  return cellsFit(cells, gridSize) && cellsAvailable(cells, occupied);
+};
+
+export const placeTargetAt = (
+  definition: TargetDefinition,
+  start: Coordinate,
+  orientation: Orientation,
+  existingTargets: PlacedTarget[],
+  gridSize = GRID_SIZE,
+): PlacedTarget | null => {
+  if (!canPlaceTarget(definition, start, orientation, existingTargets, gridSize)) {
+    return null;
+  }
+
+  return {
+    ...definition,
+    cells: buildCells(start, definition.length, orientation),
+  };
+};
 
 export const targetsOverlap = (targets: PlacedTarget[]): boolean => {
   const seen = new Set<string>();

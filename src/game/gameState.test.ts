@@ -9,7 +9,7 @@ import {
   playHumanTurn,
   shootCell,
 } from './gameState';
-import { coordinateKey, placeTargets, targetsOverlap } from './placement';
+import { canPlaceTarget, coordinateKey, placeTargetAt, placeTargets, targetsOverlap } from './placement';
 import type { PlacedTarget } from './types';
 
 const testTargets: PlacedTarget[] = [
@@ -64,6 +64,18 @@ describe('Battle Soccer game logic', () => {
       expect(targetsOverlap(targets)).toBe(false);
       expect(new Set(allCells).size).toBe(allCells.length);
     }
+  });
+
+  it('supports manual player formation placement with battleship-style sizes', () => {
+    const firstPlacement = placeTargetAt(testTargets[0], { row: 0, col: 0 }, 'horizontal', [], 4);
+
+    expect(firstPlacement?.cells).toEqual([
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+    ]);
+    expect(firstPlacement).not.toBeNull();
+    expect(canPlaceTarget(testTargets[0], { row: 0, col: 1 }, 'vertical', [firstPlacement!], 4)).toBe(false);
+    expect(placeTargetAt(testTargets[0], { row: 3, col: 3 }, 'horizontal', [], 4)).toBeNull();
   });
 
   it('starts new games with separate non-overlapping player formations', () => {
