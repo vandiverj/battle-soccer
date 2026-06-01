@@ -15,9 +15,10 @@ const buildFormationLookup = (formations: PlacedTarget[]): Map<string, PlacedTar
 
 type PlayerBoardProps = {
   state: GameState;
+  isComputerThinking?: boolean;
 };
 
-export function PlayerBoard({ state }: PlayerBoardProps) {
+export function PlayerBoard({ state, isComputerThinking = false }: PlayerBoardProps) {
   const occupiedCells = buildFormationLookup(state.playerFormations);
   const cells = Array.from({ length: state.gridSize * state.gridSize }, (_, index) => ({
     row: Math.floor(index / state.gridSize),
@@ -30,7 +31,12 @@ export function PlayerBoard({ state }: PlayerBoardProps) {
         <span>Player board</span>
         <span>{state.gridSize} × {state.gridSize}</span>
       </div>
-      <div className="game-board player-board" role="grid" aria-label="Player formation board">
+      <div
+        className={`game-board player-board ${isComputerThinking ? 'player-board--thinking' : ''}`}
+        role="grid"
+        aria-label="Player formation board"
+        aria-busy={isComputerThinking}
+      >
         {cells.map((cell) => {
           const key = coordinateKey(cell);
           const formation = occupiedCells.get(key);

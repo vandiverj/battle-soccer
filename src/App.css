@@ -159,6 +159,10 @@ h2 {
   background: #ffe1db;
 }
 
+.computer-result--thinking {
+  background: #e8f1ff;
+}
+
 .result--lost {
   background: #ffe1db;
   color: #7a1f12;
@@ -337,9 +341,14 @@ h2 {
   position: absolute;
 }
 
+.player-board--thinking .player-cell {
+  animation: computer-scan 700ms ease-in-out infinite alternate;
+}
+
 .player-cell--computer-hit {
   border-color: #ffffff;
   background: #cf4d2f;
+  animation: computer-shot-hit 360ms ease-out;
 }
 
 .player-cell--computer-hit::after {
@@ -349,6 +358,7 @@ h2 {
 .player-cell--computer-miss {
   border-color: rgba(255, 255, 255, 0.46);
   background: rgba(25, 58, 42, 0.42);
+  animation: computer-shot-miss 360ms ease-out;
 }
 
 .player-cell--computer-hit span,
@@ -358,6 +368,42 @@ h2 {
   color: #ffffff;
   font-size: clamp(1rem, 3vw, 1.9rem);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
+}
+
+@keyframes computer-scan {
+  from {
+    filter: brightness(1);
+    transform: translateY(0);
+  }
+
+  to {
+    filter: brightness(1.14);
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes computer-shot-hit {
+  0% {
+    box-shadow: 0 0 0 0 rgba(207, 77, 47, 0.65);
+    transform: scale(0.92);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0.65rem rgba(207, 77, 47, 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes computer-shot-miss {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
+    transform: scale(0.94);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0.5rem rgba(255, 255, 255, 0);
+    transform: scale(1);
+  }
 }
 
 .player-cell:hover,

@@ -3,10 +3,11 @@ import type { Coordinate, GameState } from '../game/types';
 
 type GameBoardProps = {
   state: GameState;
+  disabled?: boolean;
   onShoot: (coordinate: Coordinate) => void;
 };
 
-export function GameBoard({ state, onShoot }: GameBoardProps) {
+export function GameBoard({ state, disabled = false, onShoot }: GameBoardProps) {
   const cells = Array.from({ length: state.gridSize * state.gridSize }, (_, index) => ({
     row: Math.floor(index / state.gridSize),
     col: index % state.gridSize,
@@ -32,7 +33,7 @@ export function GameBoard({ state, onShoot }: GameBoardProps) {
               type="button"
               className={`grid-cell ${shot ? `grid-cell--${shot}` : ''}`}
               aria-label={label}
-              disabled={state.isWon || state.isLost}
+              disabled={disabled || state.isWon || state.isLost}
               onClick={() => onShoot(cell)}
             >
               <span aria-hidden="true">{shot === 'hit' ? '⚽' : shot === 'miss' ? '×' : ''}</span>

@@ -135,6 +135,14 @@ const takeComputerShot = (state: GameState, random = Math.random): GameState => 
   };
 };
 
+export const playComputerTurn = (state: GameState, random = Math.random): GameState => {
+  if (state.isWon || state.isLost) {
+    return state;
+  }
+
+  return takeComputerShot(state, random);
+};
+
 export const shootCell = (state: GameState, coordinate: Coordinate): GameState => {
   const key = coordinateKey(coordinate);
   const previousShot = state.shots[key];
@@ -191,5 +199,5 @@ export const playHumanTurn = (state: GameState, coordinate: Coordinate, random =
     return afterHumanShot;
   }
 
-  return takeComputerShot(afterHumanShot, random);
+  return playComputerTurn(afterHumanShot, random);
 };

@@ -5,6 +5,7 @@ import { ShotHistory } from './ShotHistory';
 type StatusPanelProps = {
   state: GameState;
   remainingCount: number;
+  isComputerThinking?: boolean;
   onReset: () => void;
 };
 
@@ -36,7 +37,11 @@ const formatLastResult = (state: GameState): string => {
   return result.outcome === 'hit' ? 'Hit! Keep pressing that formation.' : 'Miss. The ball rolls wide.';
 };
 
-const formatLastComputerResult = (state: GameState): string => {
+const formatLastComputerResult = (state: GameState, isComputerThinking: boolean): string => {
+  if (isComputerThinking) {
+    return 'Computer is sizing up your wall...';
+  }
+
   const result = state.lastComputerResult;
 
   if (!result) {
@@ -53,7 +58,7 @@ const formatLastComputerResult = (state: GameState): string => {
     : `Computer missed at ${shotLocation}.`;
 };
 
-export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps) {
+export function StatusPanel({ state, remainingCount, isComputerThinking = false, onReset }: StatusPanelProps) {
   const accuracy = getShotAccuracy(state);
   const formationDamage = getPlayerFormationDamage(state);
   const outcome = getGameOutcome(state);
@@ -102,8 +107,12 @@ export function StatusPanel({ state, remainingCount, onReset }: StatusPanelProps
       <p className={`result result--${state.isLost ? 'lost' : state.lastResult?.outcome ?? 'ready'}`}>
         {formatLastResult(state)}
       </p>
-      <p className={`computer-result computer-result--${state.lastComputerResult?.outcome ?? 'ready'}`}>
-        {formatLastComputerResult(state)}
+      <p
+        className={`computer-result computer-result--${
+          isComputerThinking ? 'thinking' : state.lastComputerResult?.outcome ?? 'ready'
+        }`}
+      >
+        {formatLastComputerResult(state, isComputerThinking)}
       </p>
 
       <div className="shot-history-grid">
