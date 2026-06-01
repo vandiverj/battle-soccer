@@ -47,8 +47,15 @@ function App() {
   };
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${outcome ? `app-shell--${outcome}` : ''}`}>
       <div className="hero-glow" aria-hidden="true" />
+      {outcome ? (
+        <div className={`endgame-fx endgame-fx--${outcome}`} aria-hidden="true">
+          <span className="endgame-fx__beam endgame-fx__beam--one" />
+          <span className="endgame-fx__beam endgame-fx__beam--two" />
+          <span className="endgame-fx__beam endgame-fx__beam--three" />
+        </div>
+      ) : null}
       {outcome ? (
         <div className={`outcome-burst outcome-burst--${outcome}`} role="status" aria-live="polite">
           <div className="outcome-burst__badge" aria-hidden="true">

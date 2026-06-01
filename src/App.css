@@ -18,9 +18,86 @@
   filter: blur(8px);
 }
 
+.app-shell--won .boards-panel,
+.app-shell--lost .boards-panel {
+  animation: final-board-settle 620ms ease-out;
+}
+
+.endgame-fx {
+  position: fixed;
+  z-index: 4;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.endgame-fx::before,
+.endgame-fx::after {
+  position: absolute;
+  content: '';
+}
+
+.endgame-fx--won {
+  background:
+    linear-gradient(105deg, transparent 0 18%, rgba(255, 255, 255, 0.36) 18% 19%, transparent 19% 35%),
+    linear-gradient(75deg, transparent 0 28%, rgba(247, 183, 51, 0.42) 28% 29%, transparent 29% 100%);
+  animation: final-field-flash 1200ms ease-out both;
+}
+
+.endgame-fx--won::before {
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 3.8rem, rgba(255, 255, 255, 0.28) 3.8rem 4rem),
+    repeating-linear-gradient(0deg, transparent 0 3rem, rgba(247, 183, 51, 0.34) 3rem 3.18rem);
+  opacity: 0;
+  transform: translateY(-1.2rem);
+  animation: victory-confetti 1500ms ease-out 160ms both;
+}
+
+.endgame-fx--lost {
+  background:
+    repeating-linear-gradient(115deg, rgba(25, 49, 42, 0.2) 0 0.45rem, transparent 0.45rem 1.8rem),
+    linear-gradient(180deg, rgba(39, 49, 66, 0.25), rgba(118, 33, 18, 0.18));
+  animation: final-field-dim 900ms ease-out both;
+}
+
+.endgame-fx--lost::before {
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0 47%, rgba(255, 255, 255, 0.32) 47% 53%, transparent 53% 100%);
+  opacity: 0;
+  animation: defeat-whistle-line 1100ms ease-out 120ms both;
+}
+
+.endgame-fx__beam {
+  position: absolute;
+  top: -12vh;
+  width: 0.42rem;
+  height: 128vh;
+  background: rgba(255, 255, 255, 0.46);
+  transform-origin: top center;
+}
+
+.endgame-fx__beam--one {
+  left: 18%;
+  transform: rotate(17deg);
+  animation: final-beam-sweep 1350ms ease-out both;
+}
+
+.endgame-fx__beam--two {
+  left: 52%;
+  transform: rotate(-12deg);
+  animation: final-beam-sweep 1350ms ease-out 90ms both;
+}
+
+.endgame-fx__beam--three {
+  left: 78%;
+  transform: rotate(9deg);
+  animation: final-beam-sweep 1350ms ease-out 180ms both;
+}
+
 .outcome-burst {
   position: fixed;
-  z-index: 5;
+  z-index: 6;
   top: clamp(0.85rem, 3vw, 1.5rem);
   left: 50%;
   display: flex;
@@ -492,6 +569,92 @@ h2 {
   }
 }
 
+@keyframes final-board-settle {
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(0.985);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes final-field-flash {
+  0% {
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.62;
+  }
+}
+
+@keyframes final-field-dim {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0.72;
+  }
+}
+
+@keyframes victory-confetti {
+  0% {
+    opacity: 0;
+    transform: translateY(-1.2rem);
+  }
+
+  22% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.42;
+    transform: translateY(1.8rem);
+  }
+}
+
+@keyframes defeat-whistle-line {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.42;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes final-beam-sweep {
+  0% {
+    opacity: 0;
+    translate: -12vw 0;
+  }
+
+  25% {
+    opacity: 0.85;
+  }
+
+  100% {
+    opacity: 0;
+    translate: 18vw 0;
+  }
+}
+
 .player-cell:hover,
 .player-cell:focus-visible {
   transform: none;
@@ -586,5 +749,20 @@ h2 {
   .target {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell--won .boards-panel,
+  .app-shell--lost .boards-panel,
+  .endgame-fx,
+  .endgame-fx::before,
+  .endgame-fx__beam,
+  .outcome-burst {
+    animation: none;
+  }
+
+  .endgame-fx__beam {
+    display: none;
   }
 }
