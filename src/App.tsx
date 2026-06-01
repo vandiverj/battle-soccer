@@ -13,6 +13,7 @@ function App() {
   const [game, setGame] = useState<GameState>(() => createGame());
   const [isComputerThinking, setIsComputerThinking] = useState(false);
   const remainingTargets = useMemo(() => getRemainingTargets(game), [game]);
+  const outcome = game.isWon ? 'won' : game.isLost ? 'lost' : null;
 
   useEffect(() => {
     if (!isComputerThinking) {
@@ -48,6 +49,19 @@ function App() {
   return (
     <main className="app-shell">
       <div className="hero-glow" aria-hidden="true" />
+      {outcome ? (
+        <div className={`outcome-burst outcome-burst--${outcome}`} role="status" aria-live="polite">
+          <div className="outcome-burst__badge" aria-hidden="true">
+            {outcome === 'won' ? 'FT' : '90'}
+          </div>
+          <div>
+            <p className="outcome-burst__eyebrow">{outcome === 'won' ? 'Full-time victory' : 'Final whistle'}</p>
+            <p className="outcome-burst__title">
+              {outcome === 'won' ? 'You lifted the cup!' : 'The wall came down.'}
+            </p>
+          </div>
+        </div>
+      ) : null}
       <section className="game-layout">
         <StatusPanel
           state={game}
