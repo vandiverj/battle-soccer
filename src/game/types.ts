@@ -25,6 +25,8 @@ export type ComputerShotOutcome = 'hit' | 'miss' | 'exhausted';
 
 export type GameOutcome = 'playing' | 'won' | 'lost';
 
+export type MomentumLevel = 'steady' | 'pressing' | 'surging';
+
 export type ShotSide = 'human' | 'computer';
 
 export type ShotHistoryEntry = {

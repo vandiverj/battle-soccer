@@ -1,4 +1,4 @@
-import { getGameOutcome, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
+import { getGameOutcome, getMomentumLevel, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
 import type { GameState } from '../game/types';
 import { ShotHistory } from './ShotHistory';
 
@@ -62,7 +62,15 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
   const accuracy = getShotAccuracy(state);
   const formationDamage = getPlayerFormationDamage(state);
   const outcome = getGameOutcome(state);
+  const momentum = getMomentumLevel(state);
   const outcomeLabel = outcome === 'won' ? 'Win' : outcome === 'lost' ? 'Loss' : 'Playing';
+  const momentumLabel = momentum === 'surging' ? 'Surging attack' : momentum === 'pressing' ? 'Pressing high' : 'Build-up play';
+  const momentumDetail =
+    momentum === 'surging'
+      ? 'Three-hit streak. The crowd is on its feet.'
+      : momentum === 'pressing'
+        ? 'Keep the pressure on with another clean hit.'
+        : 'Find a target to build momentum.';
 
   return (
     <aside className="status-card" aria-live="polite">
@@ -107,6 +115,11 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
       <p className={`result result--${state.isLost ? 'lost' : state.lastResult?.outcome ?? 'ready'}`}>
         {formatLastResult(state)}
       </p>
+      <div className={`momentum-card momentum-card--${momentum}`} aria-label="Attack momentum">
+        <span>{momentumLabel}</span>
+        <strong>{state.currentStreak}</strong>
+        <p>{momentumDetail}</p>
+      </div>
       <p
         className={`computer-result computer-result--${
           isComputerThinking ? 'thinking' : state.lastComputerResult?.outcome ?? 'ready'

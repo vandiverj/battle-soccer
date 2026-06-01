@@ -303,6 +303,53 @@ h2 {
   color: #7a1f12;
 }
 
+.momentum-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 0.8rem;
+  align-items: center;
+  margin: 0.75rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(35, 114, 69, 0.16);
+  border-radius: 0.85rem;
+  background: #f8fff6;
+  color: #1e4b31;
+}
+
+.momentum-card span {
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.momentum-card strong {
+  grid-row: span 2;
+  min-width: 2.4rem;
+  color: #0d5730;
+  font-size: 2rem;
+  line-height: 1;
+  text-align: right;
+}
+
+.momentum-card p {
+  margin: 0;
+  color: #4f6b5a;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.momentum-card--pressing {
+  background: #fff4d8;
+  border-color: rgba(247, 183, 51, 0.42);
+}
+
+.momentum-card--surging {
+  background: #e2f8d8;
+  border-color: rgba(35, 114, 69, 0.36);
+  animation: momentum-surge 1400ms ease-in-out infinite;
+}
+
 .shot-history-grid {
   display: grid;
   gap: 0.75rem;
@@ -633,6 +680,17 @@ h2 {
   100% {
     box-shadow: 0 0 0 0.5rem rgba(255, 255, 255, 0);
     transform: scale(1);
+  }
+}
+
+@keyframes momentum-surge {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(35, 114, 69, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 0 0.38rem rgba(35, 114, 69, 0.12);
   }
 }
 

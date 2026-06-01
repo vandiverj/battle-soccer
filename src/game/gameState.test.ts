@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createGame,
   getGameOutcome,
+  getMomentumLevel,
   getPlayerFormationDamage,
   getRemainingTargets,
   getShotAccuracy,
@@ -54,6 +55,14 @@ describe('Battle Soccer game logic', () => {
     const state = createGame(4, testTargets, testTargets);
 
     expect(getGameOutcome({ ...state, isWon: true, isLost: true })).toBe('won');
+  });
+
+  it('reports attack momentum from the current hit streak', () => {
+    const state = createGame(4, testTargets, testTargets);
+
+    expect(getMomentumLevel(state)).toBe('steady');
+    expect(getMomentumLevel({ ...state, currentStreak: 1 })).toBe('pressing');
+    expect(getMomentumLevel({ ...state, currentStreak: 3 })).toBe('surging');
   });
 
   it('places targets without overlapping cells', () => {

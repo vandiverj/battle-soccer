@@ -6,6 +6,7 @@ import type {
   Coordinate,
   GameOutcome,
   GameState,
+  MomentumLevel,
   PlacedTarget,
   ShotHistoryEntry,
   ShotResult,
@@ -53,6 +54,18 @@ export const getGameOutcome = (state: Pick<GameState, 'isWon' | 'isLost'>): Game
   }
 
   return state.isLost ? 'lost' : 'playing';
+};
+
+export const getMomentumLevel = (state: Pick<GameState, 'currentStreak'>): MomentumLevel => {
+  if (state.currentStreak >= 3) {
+    return 'surging';
+  }
+
+  if (state.currentStreak >= 1) {
+    return 'pressing';
+  }
+
+  return 'steady';
 };
 
 const parseCoordinateKey = (key: string): Coordinate => {
