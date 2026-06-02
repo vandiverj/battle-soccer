@@ -2,6 +2,7 @@ import { GRID_SIZE } from './targets';
 import { coordinateKey, placeTargets } from './placement';
 import type {
   CellState,
+  CoachHint,
   ComputerShotResult,
   Coordinate,
   DifficultyLevel,
@@ -118,6 +119,92 @@ export const getMomentumLevel = (state: Pick<GameState, 'currentStreak'>): Momen
   }
 
   return 'steady';
+};
+
+export const getCoachHint = (state: GameState): CoachHint => {
+  if (state.isWon) {
+    return {
+      title: 'Cup secured',
+      detail: 'You cleared the scouting board. Start a new match to try a cleaner run.',
+      tone: 'victory',
+    };
+  }
+
+  if (state.isLost) {
+    return {
+      title: 'Reset the shape',
+      detail:
+        state.shotCount >= state.shotLimit
+          ? 'The shot clock ran out. Use the power shot earlier when lanes look promising.'
+          : 'The computer broke the wall. Spread your next setup across more rows and columns.',
+      tone: 'warning',
+    };
+  }
+
+  if (!state.lastResult) {
+    return {
+      title: 'Scout the corners',
+      detail: 'Open with spaced shots to locate a formation before committing the power shot.',
+      tone: 'neutral',
+    };
+  }
+
+  if (state.lastResult.outcome === 'repeat') {
+    return {
+      title: 'Pick fresh grass',
+      detail: 'Repeated squares do not count, but they also give the computer no extra turn.',
+      tone: 'neutral',
+    };
+  }
+
+  const shotsLeft = state.shotLimit - state.shotCount;
+  const formationDamage = getPlayerFormationDamage(state);
+
+  if (shotsLeft <= 5) {
+    return {
+      title: 'Late match pressure',
+      detail: 'Prioritize adjacent squares around known hits before the final whistle.',
+      tone: 'warning',
+    };
+  }
+
+  if (formationDamage >= 75) {
+    return {
+      title: 'Wall under siege',
+      detail: 'The computer is close to clearing your defense. Finish targets quickly.',
+      tone: 'warning',
+    };
+  }
+
+  if (state.currentStreak >= 3) {
+    return {
+      title: 'Press the lane',
+      detail: 'Your streak is hot. Keep testing cells next to recent hits.',
+      tone: 'attack',
+    };
+  }
+
+  if (state.lastResult.outcome === 'hit') {
+    return {
+      title: 'Follow the touchline',
+      detail: 'Hits usually belong to a longer wall. Probe nearby rows or columns.',
+      tone: 'attack',
+    };
+  }
+
+  if (state.powerShotAvailable) {
+    return {
+      title: 'Power shot ready',
+      detail: 'Save it for a likely lane, or use it now to reveal three cells as one shot.',
+      tone: 'neutral',
+    };
+  }
+
+  return {
+    title: 'Keep spacing shots',
+    detail: 'Use misses to rule out open grass and narrow the next target lane.',
+    tone: 'neutral',
+  };
 };
 
 const parseCoordinateKey = (key: string): Coordinate => {

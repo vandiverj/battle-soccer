@@ -1,4 +1,4 @@
-import { DIFFICULTY_LABELS, getGameOutcome, getMatchStats, getMomentumLevel, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
+import { DIFFICULTY_LABELS, getCoachHint, getGameOutcome, getMatchStats, getMomentumLevel, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
 import type { GameState } from '../game/types';
 import { ShotHistory } from './ShotHistory';
 
@@ -74,6 +74,7 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
   const matchStats = getMatchStats(state);
   const outcome = getGameOutcome(state);
   const momentum = getMomentumLevel(state);
+  const coachHint = getCoachHint(state);
   const outcomeLabel = outcome === 'won' ? 'Win' : outcome === 'lost' ? 'Loss' : 'Playing';
   const momentumLabel = momentum === 'surging' ? 'Surging attack' : momentum === 'pressing' ? 'Pressing high' : 'Build-up play';
   const momentumDetail =
@@ -145,6 +146,11 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
         <span>{momentumLabel}</span>
         <strong>{state.currentStreak}</strong>
         <p>{momentumDetail}</p>
+      </div>
+      <div className={`coach-card coach-card--${coachHint.tone}`} aria-label="Coach hint">
+        <span>Coach hint</span>
+        <strong>{coachHint.title}</strong>
+        <p>{coachHint.detail}</p>
       </div>
       <p
         className={`computer-result computer-result--${

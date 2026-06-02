@@ -319,7 +319,8 @@ h2 {
   color: #7a1f12;
 }
 
-.momentum-card {
+.momentum-card,
+.coach-card {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.25rem 0.8rem;
@@ -332,14 +333,16 @@ h2 {
   color: #1e4b31;
 }
 
-.momentum-card span {
+.momentum-card span,
+.coach-card span {
   font-size: 0.78rem;
   font-weight: 950;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
-.momentum-card strong {
+.momentum-card strong,
+.coach-card strong {
   grid-row: span 2;
   min-width: 2.4rem;
   color: #0d5730;
@@ -348,7 +351,8 @@ h2 {
   text-align: right;
 }
 
-.momentum-card p {
+.momentum-card p,
+.coach-card p {
   margin: 0;
   color: #4f6b5a;
   font-size: 0.9rem;
@@ -364,6 +368,44 @@ h2 {
   background: #e2f8d8;
   border-color: rgba(35, 114, 69, 0.36);
   animation: momentum-surge 1400ms ease-in-out infinite;
+}
+
+.coach-card {
+  grid-template-columns: 1fr;
+  border-color: rgba(23, 62, 98, 0.18);
+  background: #eef6ff;
+  color: #173e62;
+}
+
+.coach-card strong {
+  grid-row: auto;
+  min-width: 0;
+  color: inherit;
+  font-size: 1.15rem;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.coach-card p {
+  color: inherit;
+}
+
+.coach-card--attack {
+  border-color: rgba(35, 114, 69, 0.32);
+  background: #e2f8d8;
+  color: #1e4b31;
+}
+
+.coach-card--warning {
+  border-color: rgba(207, 77, 47, 0.28);
+  background: #ffe1db;
+  color: #7a1f12;
+}
+
+.coach-card--victory {
+  border-color: rgba(247, 183, 51, 0.46);
+  background: #fff4d8;
+  color: #5d4311;
 }
 
 .pressure-card,

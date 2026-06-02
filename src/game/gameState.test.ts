@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createGame,
+  getCoachHint,
   getGameOutcome,
   getMatchStats,
   getMomentumLevel,
@@ -70,6 +71,16 @@ describe('Battle Soccer game logic', () => {
     expect(getMomentumLevel(state)).toBe('steady');
     expect(getMomentumLevel({ ...state, currentStreak: 1 })).toBe('pressing');
     expect(getMomentumLevel({ ...state, currentStreak: 3 })).toBe('surging');
+  });
+
+  it('provides an opening coach hint before the first shot', () => {
+    const state = createGame(4, testTargets, testTargets);
+
+    expect(getCoachHint(state)).toEqual({
+      title: 'Scout the corners',
+      detail: 'Open with spaced shots to locate a formation before committing the power shot.',
+      tone: 'neutral',
+    });
   });
 
   it('places targets without overlapping cells', () => {
@@ -213,6 +224,17 @@ describe('Battle Soccer game logic', () => {
     expect(state.currentStreak).toBe(0);
   });
 
+  it('coaches the player to press after a hit', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = shootCell(state, { row: 0, col: 0 });
+
+    expect(getCoachHint(state)).toMatchObject({
+      title: 'Follow the touchline',
+      tone: 'attack',
+    });
+  });
+
   it('calculates shot accuracy from counted hits and shots', () => {
     let state = createGame(4, testTargets, testTargets);
 
@@ -248,6 +270,10 @@ describe('Battle Soccer game logic', () => {
     expect(state.shotCount).toBe(MATCH_SHOT_LIMITS.quick);
     expect(state.isWon).toBe(false);
     expect(state.isLost).toBe(true);
+    expect(getCoachHint(state)).toMatchObject({
+      title: 'Reset the shape',
+      tone: 'warning',
+    });
   });
 
   it('does not lose at the shot limit when the final shot wins', () => {
@@ -358,6 +384,31 @@ describe('Battle Soccer game logic', () => {
 
     expect(state.lastComputerResult?.outcome).toBe('hit');
     expect(getPlayerFormationDamage(state)).toBe(50);
+  });
+
+  it('prioritizes late pressure coach hints over power-shot reminders', () => {
+    let state = createGame(4, testTargets, testTargets, { difficulty: 'friendly', matchLength: 'quick' });
+    state = {
+      ...state,
+      shotCount: MATCH_SHOT_LIMITS.quick - 5,
+      lastResult: {
+        outcome: 'miss',
+        coordinate: { row: 3, col: 3 },
+        mode: 'normal',
+        shotCounted: true,
+        affectedCells: [{ row: 3, col: 3 }],
+        hitCount: 0,
+        missCount: 1,
+        won: false,
+        clearedTargetIds: [],
+      },
+    };
+
+    expect(state.powerShotAvailable).toBe(true);
+    expect(getCoachHint(state)).toMatchObject({
+      title: 'Late match pressure',
+      tone: 'warning',
+    });
   });
 
   it('summarizes match stats for human and computer shots', () => {

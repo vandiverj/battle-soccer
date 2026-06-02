@@ -29,6 +29,14 @@ export type MomentumLevel = 'steady' | 'pressing' | 'surging';
 
 export type ShotSide = 'human' | 'computer';
 
+export type CoachHintTone = 'neutral' | 'attack' | 'warning' | 'victory';
+
+export type CoachHint = {
+  title: string;
+  detail: string;
+  tone: CoachHintTone;
+};
+
 export type DifficultyLevel = 'friendly' | 'derby' | 'cup-final';
 
 export type MatchLength = 'quick' | 'standard' | 'marathon';
