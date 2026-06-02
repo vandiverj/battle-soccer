@@ -6,6 +6,7 @@ import type {
   Coordinate,
   DifficultyLevel,
   GameOutcome,
+  MatchLength,
   MatchSettings,
   MatchStats,
   GameState,
@@ -18,6 +19,7 @@ import type {
 
 export const DEFAULT_MATCH_SETTINGS: MatchSettings = {
   difficulty: 'derby',
+  matchLength: 'standard',
 };
 
 export const DIFFICULTY_LABELS: Record<DifficultyLevel, string> = {
@@ -30,6 +32,18 @@ export const COMPUTER_TURN_DELAYS_MS: Record<DifficultyLevel, number> = {
   friendly: 900,
   derby: 700,
   'cup-final': 520,
+};
+
+export const MATCH_LENGTH_LABELS: Record<MatchLength, string> = {
+  quick: 'Quick 18',
+  standard: 'Standard 26',
+  marathon: 'Marathon 34',
+};
+
+export const MATCH_SHOT_LIMITS: Record<MatchLength, number> = {
+  quick: 18,
+  standard: 26,
+  marathon: 34,
 };
 
 const findTargetAt = (targets: PlacedTarget[], coordinate: Coordinate): PlacedTarget | undefined =>
@@ -125,20 +139,26 @@ export const createGame = (
   gridSize = GRID_SIZE,
   targets = placeTargets(undefined, gridSize),
   playerFormations = placeTargets(undefined, gridSize),
-  settings: MatchSettings = DEFAULT_MATCH_SETTINGS,
-): GameState => ({
-  gridSize,
-  settings,
-  targets,
-  playerFormations,
-  shots: {},
-  playerShots: {},
-  shotCount: 0,
-  computerShotCount: 0,
-  currentStreak: 0,
-  isWon: false,
-  isLost: false,
-});
+  settings: Partial<MatchSettings> = DEFAULT_MATCH_SETTINGS,
+): GameState => {
+  const resolvedSettings = { ...DEFAULT_MATCH_SETTINGS, ...settings };
+
+  return {
+    gridSize,
+    settings: resolvedSettings,
+    targets,
+    playerFormations,
+    shots: {},
+    playerShots: {},
+    shotCount: 0,
+    computerShotCount: 0,
+    currentStreak: 0,
+    powerShotAvailable: true,
+    shotLimit: MATCH_SHOT_LIMITS[resolvedSettings.matchLength],
+    isWon: false,
+    isLost: false,
+  };
+};
 
 const getAllCoordinates = (gridSize: number): Coordinate[] =>
   Array.from({ length: gridSize * gridSize }, (_, index) => ({
@@ -235,15 +255,37 @@ export const playComputerTurn = (state: GameState, random = Math.random): GameSt
 };
 
 export const shootCell = (state: GameState, coordinate: Coordinate): GameState => {
-  const key = coordinateKey(coordinate);
-  const previousShot = state.shots[key];
+  return shootCells(state, [coordinate], 'normal');
+};
 
-  if (previousShot) {
+const getPowerShotCells = (state: GameState, coordinate: Coordinate): Coordinate[] => [
+  coordinate,
+  { row: coordinate.row, col: coordinate.col + 1 },
+  { row: coordinate.row + 1, col: coordinate.col },
+].filter((cell) => cell.row >= 0 && cell.row < state.gridSize && cell.col >= 0 && cell.col < state.gridSize);
+
+export const shootPowerShot = (state: GameState, coordinate: Coordinate): GameState => {
+  if (!state.powerShotAvailable) {
+    return shootCells(state, [coordinate], 'normal');
+  }
+
+  return shootCells(state, getPowerShotCells(state, coordinate), 'power');
+};
+
+const shootCells = (state: GameState, coordinates: Coordinate[], mode: 'normal' | 'power'): GameState => {
+  const unshotCoordinates = coordinates.filter((cell) => !state.shots[coordinateKey(cell)]);
+
+  if (!unshotCoordinates.length) {
     const repeatResult: ShotResult = {
       outcome: 'repeat',
-      coordinate,
+      coordinate: coordinates[0],
+      mode,
       shotCounted: false,
+      affectedCells: [],
+      hitCount: 0,
+      missCount: 0,
       won: state.isWon,
+      clearedTargetIds: [],
     };
 
     return {
@@ -252,30 +294,44 @@ export const shootCell = (state: GameState, coordinate: Coordinate): GameState =
     };
   }
 
-  const target = findTargetAt(state.targets, coordinate);
-  const nextCellState: CellState = target ? 'hit' : 'miss';
-  const nextShots = {
-    ...state.shots,
-    [key]: nextCellState,
-  };
-  const clearedTargetId = target && isTargetCleared(target, nextShots) ? target.id : undefined;
+  const nextShots = unshotCoordinates.reduce<Record<string, CellState>>((shots, cell) => {
+    const target = findTargetAt(state.targets, cell);
+    return {
+      ...shots,
+      [coordinateKey(cell)]: target ? 'hit' : 'miss',
+    };
+  }, state.shots);
+  const hitCount = unshotCoordinates.filter((cell) => nextShots[coordinateKey(cell)] === 'hit').length;
+  const missCount = unshotCoordinates.length - hitCount;
+  const clearedTargetIds = state.targets
+    .filter((target) => !isTargetCleared(target, state.shots) && isTargetCleared(target, nextShots))
+    .map((target) => target.id);
   const won = state.targets.every((placedTarget) => isTargetCleared(placedTarget, nextShots));
+  const nextShotCount = state.shotCount + 1;
+  const shotLimitReached = !won && nextShotCount >= state.shotLimit;
   const result: ShotResult = {
-    outcome: target ? 'hit' : 'miss',
-    coordinate,
+    outcome: hitCount ? 'hit' : 'miss',
+    coordinate: unshotCoordinates[0],
+    mode,
     shotCounted: true,
-    clearedTargetId,
+    affectedCells: unshotCoordinates,
+    hitCount,
+    missCount,
+    clearedTargetId: clearedTargetIds[0],
+    clearedTargetIds,
     won,
   };
-  const currentStreak = target ? state.currentStreak + 1 : 0;
+  const currentStreak = hitCount ? state.currentStreak + hitCount : 0;
 
   return {
     ...state,
     shots: nextShots,
-    shotCount: state.shotCount + 1,
+    shotCount: nextShotCount,
     currentStreak,
+    powerShotAvailable: mode === 'power' ? false : state.powerShotAvailable,
     lastResult: result,
     isWon: won,
+    isLost: shotLimitReached,
   };
 };
 
@@ -286,7 +342,7 @@ export const playHumanTurn = (state: GameState, coordinate: Coordinate, random =
 
   const afterHumanShot = shootCell(state, coordinate);
 
-  if (!afterHumanShot.lastResult?.shotCounted || afterHumanShot.lastResult.won) {
+  if (!afterHumanShot.lastResult?.shotCounted || afterHumanShot.lastResult.won || afterHumanShot.isLost) {
     return afterHumanShot;
   }
 

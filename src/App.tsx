@@ -9,14 +9,17 @@ import {
   COMPUTER_TURN_DELAYS_MS,
   DEFAULT_MATCH_SETTINGS,
   DIFFICULTY_LABELS,
+  MATCH_LENGTH_LABELS,
+  MATCH_SHOT_LIMITS,
   createGame,
   getMatchStats,
   getRemainingTargets,
   playComputerTurn,
+  shootPowerShot,
   shootCell,
 } from './game/gameState';
 import { GRID_SIZE, TARGET_DEFINITIONS } from './game/targets';
-import type { Coordinate, DifficultyLevel, GameState, MatchSettings, Orientation, PlacedTarget } from './game/types';
+import type { Coordinate, DifficultyLevel, GameState, MatchLength, MatchSettings, Orientation, PlacedTarget } from './game/types';
 
 function App() {
   const [matchSettings, setMatchSettings] = useState<MatchSettings>(DEFAULT_MATCH_SETTINGS);
@@ -24,6 +27,7 @@ function App() {
   const [orientation, setOrientation] = useState<Orientation>('horizontal');
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [placementMessage, setPlacementMessage] = useState('Place your defensive wall before kickoff.');
+  const [shotMode, setShotMode] = useState<'normal' | 'power'>('normal');
   const [game, setGame] = useState<GameState>(() => createGame(GRID_SIZE, undefined, [], DEFAULT_MATCH_SETTINGS));
   const [isComputerThinking, setIsComputerThinking] = useState(false);
   const remainingTargets = useMemo(() => getRemainingTargets(game), [game]);
@@ -50,10 +54,13 @@ function App() {
       return;
     }
 
-    const nextGame = shootCell(game, coordinate);
+    const nextGame = shotMode === 'power' ? shootPowerShot(game, coordinate) : shootCell(game, coordinate);
     setGame(nextGame);
+    if (nextGame.lastResult?.shotCounted || !nextGame.powerShotAvailable) {
+      setShotMode('normal');
+    }
 
-    if (nextGame.lastResult?.shotCounted && !nextGame.lastResult.won) {
+    if (nextGame.lastResult?.shotCounted && !nextGame.lastResult.won && !nextGame.isLost) {
       setIsComputerThinking(true);
     }
   };
@@ -61,6 +68,7 @@ function App() {
   const handleReset = () => {
     setIsComputerThinking(false);
     setIsGameStarted(false);
+    setShotMode('normal');
     setPlacedFormations([]);
     setPlacementMessage('Place your defensive wall before kickoff.');
     setGame(createGame(GRID_SIZE, undefined, [], matchSettings));
@@ -71,13 +79,29 @@ function App() {
       return;
     }
 
-    const nextSettings = { difficulty };
+    const nextSettings = { ...matchSettings, difficulty };
     setMatchSettings(nextSettings);
     setGame((currentGame) => ({
       ...currentGame,
       settings: nextSettings,
+      shotLimit: MATCH_SHOT_LIMITS[nextSettings.matchLength],
     }));
     setPlacementMessage(`${DIFFICULTY_LABELS[difficulty]} selected. Place your defensive wall before kickoff.`);
+  };
+
+  const handleMatchLengthChange = (matchLength: MatchLength) => {
+    if (isGameStarted) {
+      return;
+    }
+
+    const nextSettings = { ...matchSettings, matchLength };
+    setMatchSettings(nextSettings);
+    setGame((currentGame) => ({
+      ...currentGame,
+      settings: nextSettings,
+      shotLimit: MATCH_SHOT_LIMITS[nextSettings.matchLength],
+    }));
+    setPlacementMessage(`${MATCH_LENGTH_LABELS[matchLength]} selected. Place your defensive wall before kickoff.`);
   };
 
   const handlePlaceFormation = (coordinate: Coordinate) => {
@@ -133,6 +157,7 @@ function App() {
 
     setIsGameStarted(true);
     setIsComputerThinking(false);
+    setShotMode('normal');
     setGame(createGame(GRID_SIZE, undefined, placedFormations, matchSettings));
   };
 
@@ -167,6 +192,8 @@ function App() {
           state={game}
           remainingCount={remainingTargets.length}
           isComputerThinking={isComputerThinking}
+          shotMode={shotMode}
+          onToggleShotMode={() => setShotMode((current) => (current === 'normal' && game.powerShotAvailable ? 'power' : 'normal'))}
           onReset={handleReset}
         />
         <div className="boards-panel" aria-label="Battle Soccer boards">
@@ -187,6 +214,18 @@ function App() {
                       onClick={() => handleDifficultyChange(difficulty)}
                     >
                       {DIFFICULTY_LABELS[difficulty]}
+                    </button>
+                  ))}
+                </div>
+                <div className="match-length-selector" aria-label="Match length selection">
+                  {(Object.keys(MATCH_LENGTH_LABELS) as MatchLength[]).map((matchLength) => (
+                    <button
+                      key={matchLength}
+                      type="button"
+                      className={matchSettings.matchLength === matchLength ? 'difficulty-selector__button difficulty-selector__button--active' : 'difficulty-selector__button'}
+                      onClick={() => handleMatchLengthChange(matchLength)}
+                    >
+                      {MATCH_LENGTH_LABELS[matchLength]}
                     </button>
                   ))}
                 </div>
@@ -225,7 +264,7 @@ function App() {
             activeTarget={activeTarget}
             onPlace={handlePlaceFormation}
           />
-          <GameBoard state={game} disabled={!isGameStarted || isComputerThinking} onShoot={handleShoot} />
+          <GameBoard state={game} disabled={!isGameStarted || isComputerThinking} shotMode={shotMode} onShoot={handleShoot} />
         </div>
         <TargetList state={game} />
       </section>

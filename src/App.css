@@ -366,6 +366,87 @@ h2 {
   animation: momentum-surge 1400ms ease-in-out infinite;
 }
 
+.pressure-card,
+.power-shot-card {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.75rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(22, 63, 42, 0.14);
+  border-radius: 0.85rem;
+  background: #eef6ff;
+  color: #173e62;
+}
+
+.pressure-card {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.pressure-card span,
+.power-shot-card span {
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.pressure-card strong {
+  grid-row: span 2;
+  min-width: 2.4rem;
+  font-size: 2rem;
+  line-height: 1;
+  text-align: right;
+}
+
+.pressure-card p,
+.power-shot-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.pressure-card--danger {
+  border-color: rgba(207, 77, 47, 0.28);
+  background: #ffe1db;
+  color: #7a1f12;
+}
+
+.power-shot-card {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background: #fff4d8;
+  color: #5d4311;
+}
+
+.power-shot-card strong {
+  display: block;
+  margin: 0.12rem 0;
+  color: #173d28;
+  font-size: 1.35rem;
+}
+
+.power-shot-card__button {
+  min-width: 4.6rem;
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #163f2a;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.power-shot-card__button--active {
+  background: #cf4d2f;
+}
+
+.power-shot-card__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
 .shot-history-grid {
   display: grid;
   gap: 0.75rem;
@@ -381,6 +462,31 @@ h2 {
   margin-bottom: 0.65rem;
   color: #204b32;
   font-size: 0.95rem;
+}
+
+.shot-history__filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.shot-history__filter {
+  min-height: 1.9rem;
+  border: 1px solid rgba(22, 63, 42, 0.12);
+  border-radius: 0.45rem;
+  background: #f8fff6;
+  color: #315640;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.shot-history__filter--active {
+  border-color: #163f2a;
+  background: #163f2a;
+  color: #ffffff;
 }
 
 .shot-history__empty {
@@ -489,6 +595,13 @@ h2 {
   gap: 0.45rem;
 }
 
+.match-length-selector {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
 .setup-controls button {
   min-height: 2.7rem;
   border: 0;
@@ -555,6 +668,11 @@ h2 {
   padding: clamp(1rem, 3vw, 1.5rem);
 }
 
+.board-card--power-armed {
+  border-color: rgba(207, 77, 47, 0.62);
+  box-shadow: 0 1.5rem 4rem rgba(207, 77, 47, 0.18);
+}
+
 .board-header {
   display: flex;
   justify-content: space-between;
@@ -610,6 +728,11 @@ h2 {
   animation: latest-shot-pop 520ms ease-out;
   outline: 3px solid rgba(255, 255, 255, 0.78);
   outline-offset: 2px;
+}
+
+.grid-cell--power-armed {
+  border-color: rgba(247, 183, 51, 0.9);
+  background: rgba(247, 183, 51, 0.26);
 }
 
 .grid-cell:disabled {
@@ -967,6 +1090,10 @@ h2 {
   .difficulty-selector {
     grid-template-columns: 1fr;
   }
+
+  .match-length-selector {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -980,6 +1107,7 @@ h2 {
   }
 
   .grid-cell--latest,
+  .grid-cell--power-armed,
   .momentum-card--surging,
   .player-board--thinking .player-cell,
   .player-cell--computer-hit,

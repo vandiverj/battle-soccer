@@ -6,6 +6,8 @@ type StatusPanelProps = {
   state: GameState;
   remainingCount: number;
   isComputerThinking?: boolean;
+  shotMode: 'normal' | 'power';
+  onToggleShotMode: () => void;
   onReset: () => void;
 };
 
@@ -18,7 +20,9 @@ const formatLastResult = (state: GameState): string => {
   }
 
   if (state.isLost) {
-    return 'Full-time defeat. The computer found every one of your formations.';
+    return state.shotCount >= state.shotLimit
+      ? 'Final whistle. You ran out of shots before clearing every club.'
+      : 'Full-time defeat. The computer found every one of your formations.';
   }
 
   const result = state.lastResult;
@@ -28,6 +32,12 @@ const formatLastResult = (state: GameState): string => {
 
   if (result.outcome === 'repeat') {
     return 'That spot was already tested. No extra shot counted.';
+  }
+
+  if (result.mode === 'power') {
+    return result.hitCount
+      ? `Power shot! ${result.hitCount} hit${result.hitCount === 1 ? '' : 's'} found across the lane.`
+      : 'Power shot spent, but the lane was empty.';
   }
 
   if (result.clearedTargetId) {
@@ -58,7 +68,7 @@ const formatLastComputerResult = (state: GameState, isComputerThinking: boolean)
     : `Computer missed at ${shotLocation}.`;
 };
 
-export function StatusPanel({ state, remainingCount, isComputerThinking = false, onReset }: StatusPanelProps) {
+export function StatusPanel({ state, remainingCount, isComputerThinking = false, shotMode, onToggleShotMode, onReset }: StatusPanelProps) {
   const accuracy = getShotAccuracy(state);
   const formationDamage = getPlayerFormationDamage(state);
   const matchStats = getMatchStats(state);
@@ -85,7 +95,7 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
       <div className="score-strip" aria-label="Game score">
         <div>
           <strong>{state.shotCount}</strong>
-          <span>Shots</span>
+          <span>Shots / {state.shotLimit}</span>
         </div>
         <div>
           <strong>{remainingCount}</strong>
@@ -122,6 +132,12 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
         <span>Computer: {matchStats.computerHits} hits / {matchStats.computerMisses} misses</span>
       </div>
 
+      <div className={`pressure-card ${state.shotLimit - state.shotCount <= 5 ? 'pressure-card--danger' : ''}`}>
+        <span>Shot clock</span>
+        <strong>{Math.max(state.shotLimit - state.shotCount, 0)}</strong>
+        <p>{state.shotLimit - state.shotCount <= 5 ? 'Late pressure. Every shot matters.' : 'Clear all targets before the shot clock expires.'}</p>
+      </div>
+
       <p className={`result result--${state.isLost ? 'lost' : state.lastResult?.outcome ?? 'ready'}`}>
         {formatLastResult(state)}
       </p>
@@ -137,6 +153,22 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
       >
         {formatLastComputerResult(state, isComputerThinking)}
       </p>
+
+      <div className="power-shot-card" aria-label="Power shot control">
+        <div>
+          <span>Power shot</span>
+          <strong>{state.powerShotAvailable ? 'Ready' : 'Spent'}</strong>
+          <p>{shotMode === 'power' ? 'Next shot hits a three-cell lane.' : 'Use once to test a short lane as one counted shot.'}</p>
+        </div>
+        <button
+          type="button"
+          className={shotMode === 'power' ? 'power-shot-card__button power-shot-card__button--active' : 'power-shot-card__button'}
+          disabled={!state.powerShotAvailable || state.isWon || state.isLost}
+          onClick={onToggleShotMode}
+        >
+          {shotMode === 'power' ? 'Armed' : 'Arm'}
+        </button>
+      </div>
 
       <div className="shot-history-grid">
         <ShotHistory

@@ -8,7 +8,9 @@ import {
   getRemainingTargets,
   getShotAccuracy,
   getShotHistory,
+  MATCH_SHOT_LIMITS,
   playHumanTurn,
+  shootPowerShot,
   shootCell,
 } from './gameState';
 import { canPlaceTarget, coordinateKey, placeTargetAt, placeTargets, targetsOverlap } from './placement';
@@ -34,6 +36,9 @@ describe('Battle Soccer game logic', () => {
 
     expect(state.currentStreak).toBe(0);
     expect(state.settings.difficulty).toBe('derby');
+    expect(state.settings.matchLength).toBe('standard');
+    expect(state.shotLimit).toBe(MATCH_SHOT_LIMITS.standard);
+    expect(state.powerShotAvailable).toBe(true);
   });
 
   it('starts new games with no computer shots', () => {
@@ -111,6 +116,40 @@ describe('Battle Soccer game logic', () => {
     expect(state.shots['3,3']).toBe('miss');
     expect(state.shotCount).toBe(2);
     expect(state.currentStreak).toBe(0);
+  });
+
+  it('uses a power shot to resolve multiple adjacent cells as one counted shot', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = shootPowerShot(state, { row: 0, col: 0 });
+
+    expect(state.shotCount).toBe(1);
+    expect(state.powerShotAvailable).toBe(false);
+    expect(state.shots['0,0']).toBe('hit');
+    expect(state.shots['0,1']).toBe('hit');
+    expect(state.shots['1,0']).toBe('miss');
+    expect(state.currentStreak).toBe(2);
+    expect(state.lastResult).toMatchObject({
+      outcome: 'hit',
+      mode: 'power',
+      hitCount: 2,
+      missCount: 1,
+      clearedTargetIds: ['test-line'],
+      won: true,
+    });
+  });
+
+  it('falls back to a normal shot after the power shot is spent', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = shootPowerShot(state, { row: 3, col: 3 });
+    state = shootPowerShot(state, { row: 0, col: 0 });
+
+    expect(state.powerShotAvailable).toBe(false);
+    expect(state.shotCount).toBe(2);
+    expect(state.shots['0,0']).toBe('hit');
+    expect(state.shots['0,1']).toBeUndefined();
+    expect(state.lastResult?.mode).toBe('normal');
   });
 
   it('does not double count repeated shots', () => {
@@ -195,6 +234,35 @@ describe('Battle Soccer game logic', () => {
 
     expect(state.shotCount).toBe(2);
     expect(getShotAccuracy(state)).toBe(50);
+  });
+
+  it('loses when the human shot limit is reached before clearing all targets', () => {
+    let state = createGame(4, testTargets, testTargets, { difficulty: 'friendly', matchLength: 'quick' });
+    state = {
+      ...state,
+      shotCount: MATCH_SHOT_LIMITS.quick - 1,
+    };
+
+    state = shootCell(state, { row: 3, col: 3 });
+
+    expect(state.shotCount).toBe(MATCH_SHOT_LIMITS.quick);
+    expect(state.isWon).toBe(false);
+    expect(state.isLost).toBe(true);
+  });
+
+  it('does not lose at the shot limit when the final shot wins', () => {
+    let state = createGame(4, testTargets, testTargets, { difficulty: 'friendly', matchLength: 'quick' });
+    state = {
+      ...state,
+      shotCount: MATCH_SHOT_LIMITS.quick - 1,
+      shots: { '0,0': 'hit' },
+    };
+
+    state = shootCell(state, { row: 0, col: 1 });
+
+    expect(state.shotCount).toBe(MATCH_SHOT_LIMITS.quick);
+    expect(state.isWon).toBe(true);
+    expect(state.isLost).toBe(false);
   });
 
   it('reports counted human shots in shot history order', () => {
@@ -369,6 +437,20 @@ describe('Battle Soccer game logic', () => {
     expect(state.lastResult?.won).toBe(true);
     expect(state.computerShotCount).toBe(1);
     expect(Object.keys(state.playerShots)).toEqual(['0,0']);
+  });
+
+  it('does not play a computer shot after a human shot-limit loss', () => {
+    let state = createGame(4, testTargets, testTargets, { difficulty: 'friendly', matchLength: 'quick' });
+    state = {
+      ...state,
+      shotCount: MATCH_SHOT_LIMITS.quick - 1,
+    };
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+
+    expect(state.isLost).toBe(true);
+    expect(state.computerShotCount).toBe(0);
+    expect(state.playerShots).toEqual({});
   });
 
   it('records computer misses against empty player-board cells', () => {

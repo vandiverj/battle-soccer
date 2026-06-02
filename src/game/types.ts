@@ -31,8 +31,11 @@ export type ShotSide = 'human' | 'computer';
 
 export type DifficultyLevel = 'friendly' | 'derby' | 'cup-final';
 
+export type MatchLength = 'quick' | 'standard' | 'marathon';
+
 export type MatchSettings = {
   difficulty: DifficultyLevel;
+  matchLength: MatchLength;
 };
 
 export type MatchStats = {
@@ -54,8 +57,13 @@ export type ShotHistoryEntry = {
 export type ShotResult = {
   outcome: ShotOutcome;
   coordinate: Coordinate;
+  mode: 'normal' | 'power';
   shotCounted: boolean;
+  affectedCells: Coordinate[];
+  hitCount: number;
+  missCount: number;
   clearedTargetId?: string;
+  clearedTargetIds: string[];
   won: boolean;
 };
 
@@ -75,6 +83,8 @@ export type GameState = {
   shotCount: number;
   computerShotCount: number;
   currentStreak: number;
+  powerShotAvailable: boolean;
+  shotLimit: number;
   lastResult?: ShotResult;
   lastComputerResult?: ComputerShotResult;
   isWon: boolean;
