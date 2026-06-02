@@ -3,6 +3,7 @@ import {
   createGame,
   getCoachHint,
   getGameOutcome,
+  getMatchRecap,
   getMatchStats,
   getMomentumLevel,
   getPlayerFormationDamage,
@@ -424,6 +425,43 @@ describe('Battle Soccer game logic', () => {
       accuracy: 0,
       formationDamage: 50,
       turnsPlayed: 1,
+    });
+  });
+
+  it('returns a win recap with reserve-shot summary after a victory', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 0, col: 0 }, () => 0.99);
+    state = playHumanTurn(state, { row: 0, col: 1 }, () => 0.99);
+
+    expect(getMatchRecap(state)).toEqual({
+      headline: 'Winning recap',
+      summary: 'You cleared all hidden clubs in 2 turns. You finished with 24 shots still in reserve.',
+      bullets: [
+        'You landed 2 hits and 0 misses for 100% accuracy.',
+        'The computer produced 0 hits and left your wall 0% damaged.',
+        'Power shot unused; best human streak 2.',
+      ],
+    });
+  });
+
+  it('returns a loss recap when the shot clock expires', () => {
+    let state = createGame(4, testTargets, testTargets, { difficulty: 'friendly', matchLength: 'quick' });
+    state = {
+      ...state,
+      shotCount: MATCH_SHOT_LIMITS.quick - 1,
+    };
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+
+    expect(getMatchRecap(state)).toEqual({
+      headline: 'Loss recap',
+      summary: 'The match ended after 18 turns. The match turned on the shot clock before every target could be cleared.',
+      bullets: [
+        'You landed 0 hits and 1 miss for 0% accuracy.',
+        'The computer produced 0 hits and left your wall 0% damaged.',
+        'Power shot unused; best human streak 0.',
+      ],
     });
   });
 

@@ -56,6 +56,12 @@ export type MatchStats = {
   turnsPlayed: number;
 };
 
+export type MatchRecap = {
+  headline: string;
+  summary: string;
+  bullets: string[];
+};
+
 export type ShotHistoryEntry = {
   key: string;
   coordinate: Coordinate;

@@ -1,4 +1,4 @@
-import { DIFFICULTY_LABELS, getCoachHint, getGameOutcome, getMatchStats, getMomentumLevel, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
+import { DIFFICULTY_LABELS, getCoachHint, getGameOutcome, getMatchRecap, getMatchStats, getMomentumLevel, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
 import type { GameState } from '../game/types';
 import { ShotHistory } from './ShotHistory';
 
@@ -72,6 +72,7 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
   const accuracy = getShotAccuracy(state);
   const formationDamage = getPlayerFormationDamage(state);
   const matchStats = getMatchStats(state);
+  const matchRecap = getMatchRecap(state);
   const outcome = getGameOutcome(state);
   const momentum = getMomentumLevel(state);
   const coachHint = getCoachHint(state);
@@ -190,6 +191,19 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
           emptyText="Computer shots appear after counted turns."
         />
       </div>
+
+      {matchRecap ? (
+        <section className="match-recap-card" aria-label="Match recap">
+          <span>Match recap</span>
+          <strong>{matchRecap.headline}</strong>
+          <p>{matchRecap.summary}</p>
+          <ul className="match-recap-card__list">
+            {matchRecap.bullets.map((bullet) => (
+              <li key={bullet}>{bullet}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <button type="button" className="reset-button" onClick={onReset}>
         New game

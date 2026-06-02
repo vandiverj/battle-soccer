@@ -333,6 +333,45 @@ h2 {
   color: #1e4b31;
 }
 
+.match-recap-card {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.85rem 0 0;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(16, 62, 38, 0.16);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: #173e62;
+}
+
+.match-recap-card span {
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.match-recap-card strong {
+  color: #103e26;
+  font-size: 1.1rem;
+}
+
+.match-recap-card p {
+  margin: 0;
+  color: #355c43;
+  line-height: 1.45;
+}
+
+.match-recap-card__list {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: #315640;
+  line-height: 1.45;
+}
+
+.match-recap-card__list li + li {
+  margin-top: 0.35rem;
+}
+
 .momentum-card span,
 .coach-card span {
   font-size: 0.78rem;

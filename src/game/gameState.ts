@@ -8,6 +8,7 @@ import type {
   DifficultyLevel,
   GameOutcome,
   MatchLength,
+  MatchRecap,
   MatchSettings,
   MatchStats,
   GameState,
@@ -108,6 +109,38 @@ export const getMatchStats = (state: GameState): MatchStats => ({
   formationDamage: getPlayerFormationDamage(state),
   turnsPlayed: Math.max(state.shotCount, state.computerShotCount),
 });
+
+export const getMatchRecap = (state: GameState): MatchRecap | null => {
+  const outcome = getGameOutcome(state);
+  if (outcome === 'playing') {
+    return null;
+  }
+
+  const stats = getMatchStats(state);
+  const shotsLeft = Math.max(state.shotLimit - state.shotCount, 0);
+  const powerShotSpent = state.powerShotAvailable ? 'unused' : 'used';
+  const closingLine =
+    outcome === 'won'
+      ? shotsLeft > 0
+        ? `You finished with ${shotsLeft} shot${shotsLeft === 1 ? '' : 's'} still in reserve.`
+        : 'You used the full shot budget to get the result.'
+      : state.shotCount >= state.shotLimit
+        ? 'The match turned on the shot clock before every target could be cleared.'
+        : 'The computer cleared your wall before you could finish the board.';
+
+  return {
+    headline: outcome === 'won' ? 'Winning recap' : 'Loss recap',
+    summary:
+      outcome === 'won'
+        ? `You cleared all hidden clubs in ${stats.turnsPlayed} turn${stats.turnsPlayed === 1 ? '' : 's'}. ${closingLine}`
+        : `The match ended after ${stats.turnsPlayed} turn${stats.turnsPlayed === 1 ? '' : 's'}. ${closingLine}`,
+    bullets: [
+      `You landed ${stats.humanHits} hit${stats.humanHits === 1 ? '' : 's'} and ${stats.humanMisses} miss${stats.humanMisses === 1 ? '' : 'es'} for ${stats.accuracy ?? 0}% accuracy.`,
+      `The computer produced ${stats.computerHits} hit${stats.computerHits === 1 ? '' : 's'} and left your wall ${stats.formationDamage}% damaged.`,
+      `Power shot ${powerShotSpent}; best human streak ${state.currentStreak}.`,
+    ],
+  };
+};
 
 export const getMomentumLevel = (state: Pick<GameState, 'currentStreak'>): MomentumLevel => {
   if (state.currentStreak >= 3) {
