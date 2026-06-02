@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createGame,
   getGameOutcome,
+  getMatchStats,
   getMomentumLevel,
   getPlayerFormationDamage,
   getRemainingTargets,
@@ -32,6 +33,7 @@ describe('Battle Soccer game logic', () => {
     const state = createGame(4, testTargets, testTargets);
 
     expect(state.currentStreak).toBe(0);
+    expect(state.settings.difficulty).toBe('derby');
   });
 
   it('starts new games with no computer shots', () => {
@@ -290,6 +292,61 @@ describe('Battle Soccer game logic', () => {
     expect(getPlayerFormationDamage(state)).toBe(50);
   });
 
+  it('summarizes match stats for human and computer shots', () => {
+    let state = createGame(4, testTargets, testTargets);
+
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
+
+    expect(getMatchStats(state)).toEqual({
+      humanHits: 0,
+      humanMisses: 1,
+      computerHits: 1,
+      computerMisses: 0,
+      accuracy: 0,
+      formationDamage: 50,
+      turnsPlayed: 1,
+    });
+  });
+
+  it('uses cup-final pressure to target cells adjacent to previous computer hits', () => {
+    const state = {
+      ...createGame(4, testTargets, testTargets, { difficulty: 'cup-final' }),
+      playerShots: {
+        '0,0': 'hit' as const,
+      },
+      computerShotCount: 1,
+    };
+
+    const randomValues = [0, 0.99];
+    const nextState = playHumanTurn(state, { row: 3, col: 3 }, () => randomValues.shift() ?? 0);
+
+    expect(nextState.lastComputerResult).toEqual({
+      outcome: 'hit',
+      coordinate: { row: 0, col: 1 },
+      shotCounted: true,
+    });
+    expect(nextState.isLost).toBe(true);
+  });
+
+  it('keeps friendly computer shots random instead of hunting adjacent cells', () => {
+    const state = {
+      ...createGame(4, testTargets, testTargets, { difficulty: 'friendly' }),
+      playerShots: {
+        '0,0': 'hit' as const,
+      },
+      computerShotCount: 1,
+    };
+
+    const nextState = playHumanTurn(state, { row: 3, col: 3 }, () => 0.99);
+
+    expect(nextState.lastComputerResult).toEqual({
+      outcome: 'miss',
+      coordinate: { row: 3, col: 3 },
+      shotCounted: true,
+    });
+    expect(nextState.isLost).toBe(false);
+  });
+
   it('does not play a computer shot after a repeated human shot', () => {
     let state = createGame(4, testTargets, testTargets);
 
@@ -348,14 +405,15 @@ describe('Battle Soccer game logic', () => {
 
     expect(state.computerShotCount).toBe(3);
     expect(state.isLost).toBe(false);
-    expect(Object.keys(state.playerShots)).toEqual(['0,0', '0,1', '0,2']);
+    expect(new Set(Object.keys(state.playerShots)).size).toBe(3);
   });
 
   it('enters a loss state when computer clears every player formation cell', () => {
     let state = createGame(4, testTargets, testTargets);
+    const randomValues = [0, 0, 0.99];
 
-    state = playHumanTurn(state, { row: 3, col: 3 }, () => 0);
-    state = playHumanTurn(state, { row: 3, col: 2 }, () => 0);
+    state = playHumanTurn(state, { row: 3, col: 3 }, () => randomValues.shift() ?? 0);
+    state = playHumanTurn(state, { row: 3, col: 2 }, () => randomValues.shift() ?? 0);
 
     expect(state.playerShots['0,0']).toBe('hit');
     expect(state.playerShots['0,1']).toBe('hit');

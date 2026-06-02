@@ -29,6 +29,22 @@ export type MomentumLevel = 'steady' | 'pressing' | 'surging';
 
 export type ShotSide = 'human' | 'computer';
 
+export type DifficultyLevel = 'friendly' | 'derby' | 'cup-final';
+
+export type MatchSettings = {
+  difficulty: DifficultyLevel;
+};
+
+export type MatchStats = {
+  humanHits: number;
+  humanMisses: number;
+  computerHits: number;
+  computerMisses: number;
+  accuracy: number | null;
+  formationDamage: number;
+  turnsPlayed: number;
+};
+
 export type ShotHistoryEntry = {
   key: string;
   coordinate: Coordinate;
@@ -51,6 +67,7 @@ export type ComputerShotResult = {
 
 export type GameState = {
   gridSize: number;
+  settings: MatchSettings;
   targets: PlacedTarget[];
   playerFormations: PlacedTarget[];
   shots: Record<string, CellState>;

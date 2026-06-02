@@ -153,6 +153,13 @@
   line-height: 1.05;
 }
 
+.outcome-burst__stats {
+  margin: 0.3rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
 .game-layout {
   position: relative;
   z-index: 1;
@@ -241,6 +248,15 @@ h2 {
   color: #53705e;
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+.match-statline {
+  display: grid;
+  gap: 0.35rem;
+  margin: -0.25rem 0 1rem;
+  color: #355c43;
+  font-size: 0.88rem;
+  font-weight: 800;
 }
 
 .outcome-stat strong {
@@ -466,6 +482,13 @@ h2 {
   gap: 0.55rem;
 }
 
+.difficulty-selector {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
 .setup-controls button {
   min-height: 2.7rem;
   border: 0;
@@ -474,6 +497,19 @@ h2 {
   color: #17482e;
   cursor: pointer;
   font-weight: 900;
+}
+
+.setup-controls .difficulty-selector__button {
+  min-height: 2.35rem;
+  border: 1px solid rgba(22, 63, 42, 0.16);
+  background: #f8fff6;
+  color: #315640;
+}
+
+.setup-controls .difficulty-selector__button--active {
+  border-color: #163f2a;
+  background: #163f2a;
+  color: #ffffff;
 }
 
 .setup-controls button:disabled {
@@ -570,6 +606,12 @@ h2 {
   background: rgba(25, 58, 42, 0.42);
 }
 
+.grid-cell--latest {
+  animation: latest-shot-pop 520ms ease-out;
+  outline: 3px solid rgba(255, 255, 255, 0.78);
+  outline-offset: 2px;
+}
+
 .grid-cell:disabled {
   cursor: default;
 }
@@ -586,7 +628,7 @@ h2 {
   background: #17482e;
   color: #f8fff6;
   font-size: clamp(0.68rem, 1.8vw, 1rem);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
 .player-cell--occupied::after {
@@ -600,6 +642,8 @@ h2 {
 
 .player-cell--occupied span {
   position: absolute;
+  z-index: 1;
+  transform: translateY(-0.08rem);
 }
 
 .player-cell--placement {
@@ -679,6 +723,18 @@ h2 {
 
   100% {
     box-shadow: 0 0 0 0.5rem rgba(255, 255, 255, 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes latest-shot-pop {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.76);
+    transform: scale(0.92);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0.7rem rgba(255, 255, 255, 0);
     transform: scale(1);
   }
 }
@@ -907,6 +963,10 @@ h2 {
   .setup-controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .difficulty-selector {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -916,6 +976,14 @@ h2 {
   .endgame-fx::before,
   .endgame-fx__beam,
   .outcome-burst {
+    animation: none;
+  }
+
+  .grid-cell--latest,
+  .momentum-card--surging,
+  .player-board--thinking .player-cell,
+  .player-cell--computer-hit,
+  .player-cell--computer-miss {
     animation: none;
   }
 

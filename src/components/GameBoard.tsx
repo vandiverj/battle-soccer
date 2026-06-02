@@ -23,6 +23,7 @@ export function GameBoard({ state, disabled = false, onShoot }: GameBoardProps) 
         {cells.map((cell) => {
           const key = coordinateKey(cell);
           const shot = state.shots[key];
+          const isLatestShot = state.lastResult?.coordinate && coordinateKey(state.lastResult.coordinate) === key;
           const label = shot
             ? `Opponent row ${cell.row + 1}, column ${cell.col + 1}: ${shot}`
             : `Shoot opponent row ${cell.row + 1}, column ${cell.col + 1}`;
@@ -31,7 +32,7 @@ export function GameBoard({ state, disabled = false, onShoot }: GameBoardProps) 
             <button
               key={key}
               type="button"
-              className={`grid-cell ${shot ? `grid-cell--${shot}` : ''}`}
+              className={`grid-cell ${shot ? `grid-cell--${shot}` : ''} ${isLatestShot ? 'grid-cell--latest' : ''}`}
               aria-label={label}
               disabled={disabled || state.isWon || state.isLost}
               onClick={() => onShoot(cell)}

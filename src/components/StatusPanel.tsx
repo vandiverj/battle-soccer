@@ -1,4 +1,4 @@
-import { getGameOutcome, getMomentumLevel, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
+import { DIFFICULTY_LABELS, getGameOutcome, getMatchStats, getMomentumLevel, getPlayerFormationDamage, getShotAccuracy } from '../game/gameState';
 import type { GameState } from '../game/types';
 import { ShotHistory } from './ShotHistory';
 
@@ -61,6 +61,7 @@ const formatLastComputerResult = (state: GameState, isComputerThinking: boolean)
 export function StatusPanel({ state, remainingCount, isComputerThinking = false, onReset }: StatusPanelProps) {
   const accuracy = getShotAccuracy(state);
   const formationDamage = getPlayerFormationDamage(state);
+  const matchStats = getMatchStats(state);
   const outcome = getGameOutcome(state);
   const momentum = getMomentumLevel(state);
   const outcomeLabel = outcome === 'won' ? 'Win' : outcome === 'lost' ? 'Loss' : 'Playing';
@@ -99,6 +100,10 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
           <span>Current streak</span>
         </div>
         <div>
+          <strong>{DIFFICULTY_LABELS[state.settings.difficulty]}</strong>
+          <span>Difficulty</span>
+        </div>
+        <div>
           <strong>{state.computerShotCount}</strong>
           <span>Computer shots</span>
         </div>
@@ -110,6 +115,11 @@ export function StatusPanel({ state, remainingCount, isComputerThinking = false,
           <strong>{outcomeLabel}</strong>
           <span>Outcome</span>
         </div>
+      </div>
+
+      <div className="match-statline" aria-label="Match statline">
+        <span>Human: {matchStats.humanHits} hits / {matchStats.humanMisses} misses</span>
+        <span>Computer: {matchStats.computerHits} hits / {matchStats.computerMisses} misses</span>
       </div>
 
       <p className={`result result--${state.isLost ? 'lost' : state.lastResult?.outcome ?? 'ready'}`}>

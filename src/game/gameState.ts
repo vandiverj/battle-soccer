@@ -4,7 +4,10 @@ import type {
   CellState,
   ComputerShotResult,
   Coordinate,
+  DifficultyLevel,
   GameOutcome,
+  MatchSettings,
+  MatchStats,
   GameState,
   MomentumLevel,
   PlacedTarget,
@@ -12,6 +15,22 @@ import type {
   ShotResult,
   ShotSide,
 } from './types';
+
+export const DEFAULT_MATCH_SETTINGS: MatchSettings = {
+  difficulty: 'derby',
+};
+
+export const DIFFICULTY_LABELS: Record<DifficultyLevel, string> = {
+  friendly: 'Friendly',
+  derby: 'Derby',
+  'cup-final': 'Cup Final',
+};
+
+export const COMPUTER_TURN_DELAYS_MS: Record<DifficultyLevel, number> = {
+  friendly: 900,
+  derby: 700,
+  'cup-final': 520,
+};
 
 const findTargetAt = (targets: PlacedTarget[], coordinate: Coordinate): PlacedTarget | undefined =>
   targets.find((target) => target.cells.some((cell) => coordinateKey(cell) === coordinateKey(coordinate)));
@@ -36,6 +55,15 @@ export const getShotAccuracy = (state: GameState): number | null => {
   return Math.round((getHitCount(state) / state.shotCount) * 100);
 };
 
+export const getHumanMissCount = (state: GameState): number =>
+  Object.values(state.shots).filter((shot) => shot === 'miss').length;
+
+export const getComputerHitCount = (state: GameState): number =>
+  Object.values(state.playerShots).filter((shot) => shot === 'hit').length;
+
+export const getComputerMissCount = (state: GameState): number =>
+  Object.values(state.playerShots).filter((shot) => shot === 'miss').length;
+
 export const getPlayerFormationDamage = (state: GameState): number => {
   const formationCells = state.playerFormations.flatMap((formation) => formation.cells);
 
@@ -55,6 +83,16 @@ export const getGameOutcome = (state: Pick<GameState, 'isWon' | 'isLost'>): Game
 
   return state.isLost ? 'lost' : 'playing';
 };
+
+export const getMatchStats = (state: GameState): MatchStats => ({
+  humanHits: getHitCount(state),
+  humanMisses: getHumanMissCount(state),
+  computerHits: getComputerHitCount(state),
+  computerMisses: getComputerMissCount(state),
+  accuracy: getShotAccuracy(state),
+  formationDamage: getPlayerFormationDamage(state),
+  turnsPlayed: Math.max(state.shotCount, state.computerShotCount),
+});
 
 export const getMomentumLevel = (state: Pick<GameState, 'currentStreak'>): MomentumLevel => {
   if (state.currentStreak >= 3) {
@@ -87,8 +125,10 @@ export const createGame = (
   gridSize = GRID_SIZE,
   targets = placeTargets(undefined, gridSize),
   playerFormations = placeTargets(undefined, gridSize),
+  settings: MatchSettings = DEFAULT_MATCH_SETTINGS,
 ): GameState => ({
   gridSize,
+  settings,
   targets,
   playerFormations,
   shots: {},
@@ -109,10 +149,50 @@ const getAllCoordinates = (gridSize: number): Coordinate[] =>
 const getAvailableComputerShots = (state: GameState): Coordinate[] =>
   getAllCoordinates(state.gridSize).filter((coordinate) => !state.playerShots[coordinateKey(coordinate)]);
 
-const takeComputerShot = (state: GameState, random = Math.random): GameState => {
+const getAdjacentCoordinates = (coordinate: Coordinate, gridSize: number): Coordinate[] =>
+  [
+    { row: coordinate.row - 1, col: coordinate.col },
+    { row: coordinate.row + 1, col: coordinate.col },
+    { row: coordinate.row, col: coordinate.col - 1 },
+    { row: coordinate.row, col: coordinate.col + 1 },
+  ].filter((cell) => cell.row >= 0 && cell.row < gridSize && cell.col >= 0 && cell.col < gridSize);
+
+const getHuntCandidates = (state: GameState): Coordinate[] => {
+  const hitCoordinates = Object.entries(state.playerShots)
+    .filter(([, outcome]) => outcome === 'hit')
+    .map(([key]) => parseCoordinateKey(key));
+  const availableKeys = new Set(getAvailableComputerShots(state).map(coordinateKey));
+
+  return hitCoordinates
+    .flatMap((coordinate) => getAdjacentCoordinates(coordinate, state.gridSize))
+    .filter((coordinate) => availableKeys.has(coordinateKey(coordinate)));
+};
+
+const chooseComputerShot = (state: GameState, random: () => number): Coordinate | null => {
   const availableShots = getAvailableComputerShots(state);
 
   if (availableShots.length === 0) {
+    return null;
+  }
+
+  if (state.settings.difficulty !== 'friendly') {
+    const huntCandidates = getHuntCandidates(state);
+    const huntChance = state.settings.difficulty === 'cup-final' ? 0.9 : 0.58;
+
+    if (huntCandidates.length > 0 && random() < huntChance) {
+      const huntIndex = Math.max(0, Math.min(Math.floor(random() * huntCandidates.length), huntCandidates.length - 1));
+      return huntCandidates[huntIndex];
+    }
+  }
+
+  const shotIndex = Math.max(0, Math.min(Math.floor(random() * availableShots.length), availableShots.length - 1));
+  return availableShots[shotIndex];
+};
+
+const takeComputerShot = (state: GameState, random = Math.random): GameState => {
+  const coordinate = chooseComputerShot(state, random);
+
+  if (!coordinate) {
     const result: ComputerShotResult = {
       outcome: 'exhausted',
       shotCounted: false,
@@ -124,8 +204,6 @@ const takeComputerShot = (state: GameState, random = Math.random): GameState => 
     };
   }
 
-  const shotIndex = Math.max(0, Math.min(Math.floor(random() * availableShots.length), availableShots.length - 1));
-  const coordinate = availableShots[shotIndex];
   const key = coordinateKey(coordinate);
   const target = findTargetAt(state.playerFormations, coordinate);
   const outcome: CellState = target ? 'hit' : 'miss';

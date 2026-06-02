@@ -5,20 +5,29 @@ import { PlayerBoard } from './components/PlayerBoard';
 import { StatusPanel } from './components/StatusPanel';
 import { TargetList } from './components/TargetList';
 import { placeTargetAt, placeTargets } from './game/placement';
-import { createGame, getRemainingTargets, playComputerTurn, shootCell } from './game/gameState';
+import {
+  COMPUTER_TURN_DELAYS_MS,
+  DEFAULT_MATCH_SETTINGS,
+  DIFFICULTY_LABELS,
+  createGame,
+  getMatchStats,
+  getRemainingTargets,
+  playComputerTurn,
+  shootCell,
+} from './game/gameState';
 import { GRID_SIZE, TARGET_DEFINITIONS } from './game/targets';
-import type { Coordinate, GameState, Orientation, PlacedTarget } from './game/types';
-
-const COMPUTER_TURN_DELAY_MS = 700;
+import type { Coordinate, DifficultyLevel, GameState, MatchSettings, Orientation, PlacedTarget } from './game/types';
 
 function App() {
+  const [matchSettings, setMatchSettings] = useState<MatchSettings>(DEFAULT_MATCH_SETTINGS);
   const [placedFormations, setPlacedFormations] = useState<PlacedTarget[]>([]);
   const [orientation, setOrientation] = useState<Orientation>('horizontal');
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [placementMessage, setPlacementMessage] = useState('Place your defensive wall before kickoff.');
-  const [game, setGame] = useState<GameState>(() => createGame(GRID_SIZE, undefined, []));
+  const [game, setGame] = useState<GameState>(() => createGame(GRID_SIZE, undefined, [], DEFAULT_MATCH_SETTINGS));
   const [isComputerThinking, setIsComputerThinking] = useState(false);
   const remainingTargets = useMemo(() => getRemainingTargets(game), [game]);
+  const matchStats = useMemo(() => getMatchStats(game), [game]);
   const outcome = game.isWon ? 'won' : game.isLost ? 'lost' : null;
   const activeTarget = TARGET_DEFINITIONS[placedFormations.length];
   const isSetupComplete = placedFormations.length === TARGET_DEFINITIONS.length;
@@ -31,10 +40,10 @@ function App() {
     const timer = window.setTimeout(() => {
       setGame((currentGame) => playComputerTurn(currentGame));
       setIsComputerThinking(false);
-    }, COMPUTER_TURN_DELAY_MS);
+    }, COMPUTER_TURN_DELAYS_MS[game.settings.difficulty]);
 
     return () => window.clearTimeout(timer);
-  }, [isComputerThinking]);
+  }, [game.settings.difficulty, isComputerThinking]);
 
   const handleShoot = (coordinate: Coordinate) => {
     if (!isGameStarted || isComputerThinking || game.isWon || game.isLost) {
@@ -54,7 +63,21 @@ function App() {
     setIsGameStarted(false);
     setPlacedFormations([]);
     setPlacementMessage('Place your defensive wall before kickoff.');
-    setGame(createGame(GRID_SIZE, undefined, []));
+    setGame(createGame(GRID_SIZE, undefined, [], matchSettings));
+  };
+
+  const handleDifficultyChange = (difficulty: DifficultyLevel) => {
+    if (isGameStarted) {
+      return;
+    }
+
+    const nextSettings = { difficulty };
+    setMatchSettings(nextSettings);
+    setGame((currentGame) => ({
+      ...currentGame,
+      settings: nextSettings,
+    }));
+    setPlacementMessage(`${DIFFICULTY_LABELS[difficulty]} selected. Place your defensive wall before kickoff.`);
   };
 
   const handlePlaceFormation = (coordinate: Coordinate) => {
@@ -110,7 +133,7 @@ function App() {
 
     setIsGameStarted(true);
     setIsComputerThinking(false);
-    setGame(createGame(GRID_SIZE, undefined, placedFormations));
+    setGame(createGame(GRID_SIZE, undefined, placedFormations, matchSettings));
   };
 
   return (
@@ -133,6 +156,9 @@ function App() {
             <p className="outcome-burst__title">
               {outcome === 'won' ? 'You lifted the cup!' : 'The wall came down.'}
             </p>
+            <p className="outcome-burst__stats">
+              {matchStats.turnsPlayed} turns · {matchStats.accuracy ?? 0}% accuracy · {matchStats.formationDamage}% wall damage
+            </p>
           </div>
         </div>
       ) : null}
@@ -152,6 +178,18 @@ function App() {
                 <p>{placementMessage}</p>
               </div>
               <div className="setup-controls" aria-label="Formation placement controls">
+                <div className="difficulty-selector" aria-label="Difficulty selection">
+                  {(Object.keys(DIFFICULTY_LABELS) as DifficultyLevel[]).map((difficulty) => (
+                    <button
+                      key={difficulty}
+                      type="button"
+                      className={matchSettings.difficulty === difficulty ? 'difficulty-selector__button difficulty-selector__button--active' : 'difficulty-selector__button'}
+                      onClick={() => handleDifficultyChange(difficulty)}
+                    >
+                      {DIFFICULTY_LABELS[difficulty]}
+                    </button>
+                  ))}
+                </div>
                 <button type="button" onClick={() => setOrientation((current) => (current === 'horizontal' ? 'vertical' : 'horizontal'))}>
                   Rotate: {orientation}
                 </button>

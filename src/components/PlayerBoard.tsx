@@ -52,6 +52,7 @@ export function PlayerBoard({
           const key = coordinateKey(cell);
           const formation = occupiedCells.get(key);
           const computerShot = state.playerShots[key];
+          const isLatestComputerShot = state.lastComputerResult?.coordinate && coordinateKey(state.lastComputerResult.coordinate) === key;
           const computerShotLabel = computerShot ? `, computer ${computerShot}` : ', not yet shot by computer';
           const label = formation
             ? `Row ${cell.row + 1}, column ${cell.col + 1}: occupied by ${formation.name}${computerShotLabel}`
@@ -71,7 +72,7 @@ export function PlayerBoard({
                 disabled={Boolean(formation)}
                 onClick={() => onPlace?.(cell)}
               >
-                <span aria-hidden="true">{formation ? formation.shortName.slice(0, 2) : ''}</span>
+                <span aria-hidden="true">{formation ? '▌▌' : ''}</span>
               </button>
             );
           }
@@ -81,11 +82,11 @@ export function PlayerBoard({
               key={key}
               className={`grid-cell player-cell ${formation ? 'player-cell--occupied' : ''} ${
                 computerShot ? `player-cell--computer-${computerShot}` : ''
-              }`}
+              } ${isLatestComputerShot ? 'grid-cell--latest' : ''}`}
               role="gridcell"
               aria-label={label}
             >
-              <span aria-hidden="true">{computerShot === 'hit' ? '⚽' : computerShot === 'miss' ? '×' : formation ? formation.shortName.slice(0, 2) : ''}</span>
+              <span aria-hidden="true">{computerShot === 'hit' ? '⚽' : computerShot === 'miss' ? '×' : formation ? '▌▌' : ''}</span>
             </div>
           );
         })}
